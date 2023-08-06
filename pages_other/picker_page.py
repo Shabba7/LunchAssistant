@@ -2,10 +2,12 @@ import streamlit as st
 import pandas as pd
 import random
 import altair as alt
+import os
 
 class Page:
     user = None
     restaurants = []
+    df = None
     def __init__(self, user) -> None:
         self.user = user
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
@@ -21,14 +23,15 @@ class Page:
         """,
             unsafe_allow_html=True,
         )
-    def run(self):
+        self.update()
 
+    def run(self):
         self.vote()
         self.submit()
         self.list_rest()
 
     def vote(self):
-        restaurants = self.restaurants
+        restaurants = list(self.df['Restaurant'])
         user = self.user
         self.user_votes = {}
 
@@ -90,23 +93,23 @@ class Page:
 
         st.text_input('Add restaurant', key='widget', on_change=submit)
         if st.session_state.text.strip() != "" and st.session_state.text not in self.restaurants:
-            self.restaurants.append((st.session_state.text))
+            self.save_data({'Restaurant': st.session_state.text, 'User': self.user})
             st.toast("Restaurant added! Thanks for contributing!", icon='😍')
+            self.update()
 
     def list_rest(self):
         # Display the list of restaurants
         st.header("List of Restaurants")
-        if not self.restaurants:
-            st.write("No restaurants added yet.")
-        else:
-            data = {
-                "Restaurant Name": self.restaurants,
-                "Added by": [self.user] * len(self.restaurants)
-            }
-            df = pd.DataFrame(data)
 
             # Displaying the table
-            st.table(df)
+        st.dataframe(self.df,use_container_width=True, hide_index=True)
 
+    def save_data(self, data):
+        # For demonstration purposes, let's just append the data to a CSV file
+        df = pd.DataFrame([data])
+        df.to_csv("list_of_restaurants.csv", mode="a", header=not os.path.exists("list_of_restaurants.csv"), index=False)
 
+    def update(self):
+        self.df = pd.read_csv("list_of_restaurants.csv")
+        self.restaurants = self.df['Restaurant']
 
