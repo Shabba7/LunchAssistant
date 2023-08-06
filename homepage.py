@@ -1,13 +1,10 @@
 import streamlit as st
 from pages_other import main_page, picker_page, rankings_page, login_page, review_page
-from css import styles
 import time
 from streamlit_option_menu import option_menu
 
 st.markdown("<h1 style='text-align: center; color: #0F596E;'>Lunch Assistant</h1>", unsafe_allow_html=True)
 
-
-st.write(styles.FONT_CSS, unsafe_allow_html=True)
 
 auth_status, user = login_page.Page().run()
 
