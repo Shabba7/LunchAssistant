@@ -32,17 +32,6 @@ class Page:
         col4.metric(label="Ratinho do lixo", value="Edgar Moreira")
         col5.metric(label="Next Stop", value="---")
 
-        # df = pd.DataFrame({
-        #     "col1": np.random.randn(10) / 150 + 41.1578156070871,
-        #     "col2": np.random.randn(10) / 150 + -8.635795928658316,
-        # })
-
-        # st.map(df,
-        #     latitude='col1',
-        #     longitude='col2',
-        #     size='2',
-        #     color='#ff00005f')
-        # st.map(data=None, latitude='41.1578156070871', longitude='-8.635795928658316', color=None, size=None, zoom=19, use_container_width=True)
         latitude = 41.1578156070871
         longitude = -8.635795928658316
         data = pd.DataFrame({
