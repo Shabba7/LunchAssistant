@@ -5,12 +5,14 @@ import altair as alt
 from datetime import datetime
 
 class Page:
+
     user = None
     random_restaurants = None
-    df = None
 
     def __init__(self, user) -> None:
-        self.user = user
+        if not st.session_state["init_ran"]:
+            self.user = user
+        # st.session_state["vote_started"] = False
 
     def run(self):
         self.vote()
@@ -24,6 +26,7 @@ class Page:
             _,_,col,_,_ = st.columns(5)
             if col.button("Start Vote"):
                 # Pick 3 random restaurants from the list for voting
+
                 self.pick_3_restaurants()
 
         else:
@@ -33,24 +36,25 @@ class Page:
         if self.is_vote_finished():
             # Create a DataFrame from the vote_counts dictionary
 
-            # Create an Altair chart
-            chart = alt.Chart(df).mark_bar().encode(
-                y=alt.Y('Votes:Q', axis=alt.Axis(title='Votes')),
-                x=alt.X('Restaurant:N', axis=alt.Axis(title='Restaurant', labelAngle=0)),
-                tooltip=['Restaurant', 'Votes']
-            )
+            # # Create an Altair chart
+            # chart = alt.Chart(df).mark_bar().encode(
+            #     y=alt.Y('Votes:Q', axis=alt.Axis(title='Votes')),
+            #     x=alt.X('Restaurant:N', axis=alt.Axis(title='Restaurant', labelAngle=0)),
+            #     tooltip=['Restaurant', 'Votes']
+            # )
 
-            # Hide the legend
-            chart = chart.configure_legend(orient='none')
+            # # Hide the legend
+            # chart = chart.configure_legend(orient='none')
 
-            # Display the chart
-            st.altair_chart(chart, use_container_width=True)
+            # # Display the chart
+            # st.altair_chart(chart, use_container_width=True)
+            pass
 
     def vote_in_progress(self):
 
         # Create a radio button for the restaurants
         st.write("### Select one:")
-        chosen_restaurant = st.radio(" ", st.session_state["random_restaurants"])
+        #chosen_restaurant = st.radio(" ", st.session_state["random_restaurants"])
         time_left = self.get_time_until_next_midday()
         st.write(f'###### Polls will close in {str(time_left).split(".")[0]}')
         progress_bar = st.progress(1)
@@ -73,7 +77,7 @@ class Page:
         st.write("### List of Restaurants")
 
         # Displaying the table
-        st.dataframe(self.df,use_container_width=True, hide_index=True)
+        #st.dataframe(self.df,use_container_width=True, hide_index=True)
 
     def add_restaurant_to_db(restaurant, user):
         # TODO: Should add this to the DB list of restaurants
@@ -94,6 +98,21 @@ class Page:
         self.set_vote_started(True)
         st.experimental_rerun()
 
+    def is_vote_started(self):
+            # TODO: create DB to store this
+            return True
+
+    def is_vote_finished(self):
+        # TODO: create DB to store this
+        st.session_state
+
+    def set_vote_started(self, status):
+        # TODO: create DB to store this
+        pass
+
+    def set_vote_finished(self, status):
+        # TODO: create DB to store this
+        pass
 
     @staticmethod
     def get_time_until_next_midday():

@@ -7,7 +7,6 @@ from streamlit_autorefresh import st_autorefresh
 
 st.markdown("<h1 style='text-align: center; color: #0F596E;'>Lunch Assistant</h1>", unsafe_allow_html=True)
 
-
 auth_status, user = login_page.Page().run()
 
 if auth_status:
@@ -30,6 +29,7 @@ if auth_status:
     map_tabs_to_obj[selected_menu].run()
 
 elif auth_status is None:
+    st.session_state["init_ran"] = True
     st.warning("Please enter your username and password")
 
 else:

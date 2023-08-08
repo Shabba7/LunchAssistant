@@ -7,19 +7,20 @@ class Page:
     money = 1500
     reviews = 142
     def __init__(self) -> None:
-        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
-        st.markdown(
-            """
-        <style>
-        [role=radiogroup]{
-        gap: 3rem;
-        display: flex;
-        justify-content: space-evenly;
-        }
-        </style>
-        """,
-            unsafe_allow_html=True,
-        )
+        if not st.session_state["init_ran"]:
+            st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
+            st.markdown(
+                """
+            <style>
+            [role=radiogroup]{
+            gap: 3rem;
+            display: flex;
+            justify-content: space-evenly;
+            }
+            </style>
+            """,
+                unsafe_allow_html=True,
+            )
 
     def run(self):
         col1, col2, col3 = st.columns(3, gap="small")

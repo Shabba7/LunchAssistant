@@ -3,8 +3,6 @@ import pandas as pd
 import os
 class Page:
     review_saved = None
-    def __init__(self) -> None:
-        pass
 
     def run(self):
         self.page()
