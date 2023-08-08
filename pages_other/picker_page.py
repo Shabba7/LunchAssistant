@@ -75,22 +75,6 @@ class Page:
         # Displaying the table
         st.dataframe(self.df,use_container_width=True, hide_index=True)
 
-    def is_vote_started(self):
-        # TODO: create DB to store this
-        return True
-
-    def is_vote_finished(self):
-        # TODO: create DB to store this
-        return True
-
-    def set_vote_started(self, status):
-        # TODO: create DB to store this
-        pass
-
-    def set_vote_finished(self, status):
-        # TODO: create DB to store this
-        pass
-
     def add_restaurant_to_db(restaurant, user):
         # TODO: Should add this to the DB list of restaurants
         pass

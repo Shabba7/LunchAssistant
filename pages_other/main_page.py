@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+
 class Page:
     restaurants = 27
     money = 1500
