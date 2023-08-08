@@ -12,7 +12,6 @@ class Page:
     def __init__(self, user) -> None:
         if not st.session_state["init_ran"]:
             self.user = user
-        # st.session_state["vote_started"] = False
 
     def run(self):
         self.vote()

@@ -22,7 +22,8 @@ if auth_status:
                             ["Home", "Rankings", "Picker", 'Review'],
                             icons=['house', 'arrow-down-up', "list-task", 'pencil-square'],
                             orientation="horizontal")
-    if selected_menu == "Picker":
+
+    if selected_menu == "Picker" and picker_page.Page.get_time_until_next_midday().total_seconds() < 60:
         st_autorefresh(interval=1000)
     else:
         st_autorefresh(interval=60000)
