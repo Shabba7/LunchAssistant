@@ -2,114 +2,121 @@ import streamlit as st
 import pandas as pd
 import random
 import altair as alt
-import os
+from datetime import datetime
 
 class Page:
     user = None
-    restaurants = []
+    random_restaurants = None
     df = None
+
     def __init__(self, user) -> None:
         self.user = user
-        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
-        st.markdown(
-            """
-        <style>
-        [role=radiogroup]{
-        gap: 3rem;
-        display: flex;
-        justify-content: space-evenly;
-        }
-        </style>
-        """,
-            unsafe_allow_html=True,
-        )
-        self.update()
 
     def run(self):
         self.vote()
-        self.submit()
-        self.list_rest()
+        self.add_restaurant()
+        self.list_restaurants()
 
     def vote(self):
-        restaurants = list(self.df['Restaurant'])
-        user = self.user
-        self.user_votes = {}
-
-        # Initialize session_state if not already present
-        if "votes" not in st.session_state:
-            st.session_state.votes = {restaurant: 0 for restaurant in restaurants}
-
-
-        # Create a button to start the vote
-        if "vote_started" not in st.session_state:
+        # Create a button to start the vote if within allowed timeslot
+        if not self.is_vote_started() and 8 <= datetime.now().time().hour <= 12:
+            # Little trick to center Start vote button
             _,_,col,_,_ = st.columns(5)
-            with col:
-                if st.button("Start Vote"):
-                    # Pick 3 random restaurants from the list for voting
-                    random_restaurants = random.sample(restaurants, 3)
-                    random_restaurants.sort()
-                    st.session_state["random_restaurants"] = random_restaurants
-                    st.session_state["vote_started"] = True
-                    st.experimental_rerun()
+            if col.button("Start Vote"):
+                # Pick 3 random restaurants from the list for voting
+                self.pick_3_restaurants()
 
-        # Display the vote bars if the vote has started
-        if "vote_started" in st.session_state:
-            if st.session_state["vote_started"]:
-                # Create a radio button for the restaurants
+        else:
+            if self.is_vote_started():
+                self.vote_in_progress()
 
-                chosen_restaurant = st.radio("", st.session_state["random_restaurants"])
+        if self.is_vote_finished():
+            # Create a DataFrame from the vote_counts dictionary
 
-                # Update the user's vote in session_state
-                self.user_votes[user] = chosen_restaurant
+            # Create an Altair chart
+            chart = alt.Chart(df).mark_bar().encode(
+                y=alt.Y('Votes:Q', axis=alt.Axis(title='Votes')),
+                x=alt.X('Restaurant:N', axis=alt.Axis(title='Restaurant', labelAngle=0)),
+                tooltip=['Restaurant', 'Votes']
+            )
 
-                # Update the vote count based on user votes
-                vote_counts = {restaurant: list(self.user_votes.values()).count(restaurant)
-                            for restaurant in st.session_state["random_restaurants"]}
+            # Hide the legend
+            chart = chart.configure_legend(orient='none')
 
-                # Create a DataFrame from the vote_counts dictionary
-                df = pd.DataFrame(list(vote_counts.items()), columns=["Restaurant", "Votes"])
+            # Display the chart
+            st.altair_chart(chart, use_container_width=True)
 
-                # Create an Altair chart
-                chart = alt.Chart(df).mark_bar().encode(
-                    y=alt.Y('Votes:Q', axis=alt.Axis(title='Votes')),
-                    x=alt.X('Restaurant:N', axis=alt.Axis(title='Restaurant', labelAngle=0)),
-                    tooltip=['Restaurant', 'Votes']
-                )
+    def vote_in_progress(self):
 
-                # Hide the legend
-                chart = chart.configure_legend(orient='none')
+        # Create a radio button for the restaurants
+        st.write("### Select one:")
+        chosen_restaurant = st.radio(" ", st.session_state["random_restaurants"])
+        time_left = self.get_time_until_next_midday()
+        st.write(f'###### Polls will close in {str(time_left).split(".")[0]}')
+        progress_bar = st.progress(1)
+        progress_bar.progress(time_left.total_seconds() / (60*60*24))
+        if time_left.total_seconds() <= 0:
+            self.set_vote_started(False)
+            self.set_vote_finished(True)
 
-                # Display the chart
-                st.altair_chart(chart, use_container_width=True)
+    def add_restaurant(self):
 
-    def submit(self):
+        with st.form("my_form", clear_on_submit=True):
+            restaurant = st.text_input('Add restaurant')
+            if st.form_submit_button("Submit"):
+                if restaurant.strip() != "" and restaurant not in self.restaurants:
+                    self.add_restaurant_to_db(restaurant, self.user)
+                    st.toast("Restaurant added! Thanks for contributing!", icon='😍')
 
-        if 'text' not in st.session_state:
-            st.session_state.text = ''
-
-        def submit():
-            st.session_state.text = st.session_state.widget
-            st.session_state.widget = ''
-
-        st.text_input('Add restaurant', key='widget', on_change=submit)
-        if st.session_state.text.strip() != "" and st.session_state.text not in self.restaurants:
-            self.save_data({'Restaurant': st.session_state.text, 'User': self.user})
-            st.toast("Restaurant added! Thanks for contributing!", icon='😍')
-            self.update()
-
-    def list_rest(self):
+    def list_restaurants(self):
         # Display the list of restaurants
-        st.header("List of Restaurants")
+        st.write("### List of Restaurants")
 
-            # Displaying the table
+        # Displaying the table
         st.dataframe(self.df,use_container_width=True, hide_index=True)
 
-    def save_data(self, data):
-        # For demonstration purposes, let's just append the data to a CSV file
-        df = pd.DataFrame([data])
-        df.to_csv("list_of_restaurants.csv", mode="a", header=not os.path.exists("list_of_restaurants.csv"), index=False)
+    def is_vote_started(self):
+        # TODO: create DB to store this
+        return True
 
-    def update(self):
-        self.df = pd.read_csv("list_of_restaurants.csv")
-        self.restaurants = self.df['Restaurant']
+    def is_vote_finished(self):
+        # TODO: create DB to store this
+        return True
 
+    def set_vote_started(self, status):
+        # TODO: create DB to store this
+        pass
+
+    def set_vote_finished(self, status):
+        # TODO: create DB to store this
+        pass
+
+    def add_restaurant_to_db(restaurant, user):
+        # TODO: Should add this to the DB list of restaurants
+        pass
+
+    def add_vote_to_restaurant(self):
+        # Check if user already voted in one restaurant and if he already did remove and add to the new one
+        # TODO: create DB call for this
+        pass
+
+    def get_restaurants_list(self):
+        # TODO: Return restaurant list from DB
+        pass
+
+    def pick_3_restaurants(self):
+        # TODO: This list has to be stored in the DB so that it does not change
+        self.random_restaurants = random.sample(self.get_restaurants_list(), 3).sort()
+        self.set_vote_started(True)
+        st.experimental_rerun()
+
+
+    @staticmethod
+    def get_time_until_next_midday():
+        now = datetime.now()
+        midday = now.replace(hour=12, minute=0, second=0, microsecond=0)
+
+        if now > midday:
+            midday = midday.replace(day=midday.day + 1)
+
+        return (midday - now)
