@@ -1,9 +1,21 @@
-import streamlit as st
-from pages_other import main_page, picker_page, rankings_page, login_page, review_page
-import time
-from streamlit_option_menu import option_menu
+from pages_other import main_page, picker_page, rankings_page, login_page, review_page, db_test
 from streamlit_autorefresh import st_autorefresh
+from streamlit_option_menu import option_menu
+import psycopg2
+import streamlit as st
+import time
 
+@st.cache_resource
+def init_connection():
+    return psycopg2.connect(**st.secrets["postgres"])
+
+conn = init_connection()
+
+# @st.cache_data(ttl=600)
+def run_query(query):
+    with conn.cursor() as cur:
+        cur.execute(query)
+        return cur.fetchall()
 
 st.markdown("<h1 style='text-align: center; color: #0F596E;'>Lunch Assistant</h1>", unsafe_allow_html=True)
 
@@ -15,11 +27,12 @@ if auth_status:
         'Home':     main_page.Page(),
         'Rankings': rankings_page.Page(),
         'Picker':   picker_page.Page(user),
-        'Review':   review_page.Page()
+        'Review':   review_page.Page(),
+        'DBTest':   db_test.Page(run_query)
     }
 
     selected_menu = option_menu(None,
-                            ["Home", "Rankings", "Picker", 'Review'],
+                            ["Home", "Rankings", "Picker", 'Review', 'DBTest'],
                             icons=['house', 'arrow-down-up', "list-task", 'pencil-square'],
                             orientation="horizontal")
 

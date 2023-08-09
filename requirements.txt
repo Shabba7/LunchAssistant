@@ -4,4 +4,4 @@ streamlit_autorefresh
 streamlit_authenticator
 pandas
 altair
-psycopg2
+psycopg2-binary
