@@ -36,7 +36,7 @@ class Page:
         col5.metric(label="Next Stop", value="---")
 
         def prep_row(row):
-            lon, lat = row[2][1:-1].split(',')
+            lon, lat = row['res_loc'][1:-1].split(',')
             return (float(lat), float(lon), 6, '#00ff00')
         rows = db.fetch_restaurants_location()
         rows = list(map(prep_row, rows))

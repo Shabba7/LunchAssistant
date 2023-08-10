@@ -10,13 +10,14 @@ CREATE TABLE users (
     user_handle VARCHAR(255)    NOT NULL UNIQUE,
     user_name   VARCHAR(255)    NOT NULL,
     pass_hash   VARCHAR(255)    NOT NULL,
-    email       VARCHAR(255)
+    user_email  VARCHAR(255)
 );
 
 CREATE TABLE restaurants (
-    res_id      SERIAL          PRIMARY KEY,
-    res_name    VARCHAR(255)    NOT NULL UNIQUE,
-    res_loc     point           NOT NULL
+    res_id      SERIAL                        PRIMARY KEY,
+    res_name    VARCHAR(255)                  NOT NULL UNIQUE,
+    res_loc     point                         NOT NULL,
+    res_user    INT REFERENCES users(user_id) NOT NULL
 );
 
 CREATE TABLE reviews(
@@ -29,10 +30,11 @@ CREATE TABLE reviews(
     PRIMARY KEY (user_id, res_id)
 );
 
-CREATE VIEW restaurant_quality AS 
+
+CREATE VIEW restaurant_quality AS
     SELECT re.res_id, re.res_name, re.res_loc, count(rv.*) review_count,
         avg(rv.food_rating) avg_food, avg(rv.service_rating) avg_service, avg(rv.price_rating) avg_price, avg(rv.price_paid) avg_paid
     FROM restaurants re
     LEFT JOIN reviews rv ON re.res_id = rv.res_id
-    GROUP BY re.res_id               
+    GROUP BY re.res_id
 ;

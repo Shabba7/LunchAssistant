@@ -1,10 +1,10 @@
-from pages_other import (
+from webpages import (
+    admin_page,
     main_page,
     picker_page,
     rankings_page,
     login_page,
     review_page,
-    db_test,
 )
 from streamlit_autorefresh import st_autorefresh
 from streamlit_option_menu import option_menu
@@ -21,23 +21,23 @@ if auth_status:
     # Create tabs
     map_tabs_to_obj = {
         "Home": main_page.Page(),
-        "Rankings": rankings_page.Page(),
+        "Ranking": rankings_page.Page(),
         "Picker": picker_page.Page(user),
         "Review": review_page.Page(),
-        "DBTest": db_test.Page(),
+        "Admin": admin_page.Page(),
     }
 
-    if user in ["jsmith"]:
+    if user in ["emoreira","ngregori"]:
         selected_menu = option_menu(
             None,
-            ["Home", "Rankings", "Picker", "Review", "DBTest"],
-            icons=["house", "arrow-down-up", "list-task", "pencil-square"],
+            ["Home", "Ranking", "Picker", "Review", "Admin"],
+            icons=["house", "arrow-down-up", "list-task", "pencil-square", "person-badge-fill"],
             orientation="horizontal",
         )
     else:
         selected_menu = option_menu(
             None,
-            ["Home", "Rankings", "Picker", "Review"],
+            ["Home", "Ranking", "Picker", "Review"],
             icons=["house", "arrow-down-up", "list-task", "pencil-square"],
             orientation="horizontal",
         )
