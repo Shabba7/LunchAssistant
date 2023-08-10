@@ -26,18 +26,21 @@ def _fetch_all_no_params(query):
         return cur.fetchall()
 
 
-def _insert(conn, query):
+def _insert(query, params):
+    conn = init_connection()
     with conn.cursor() as cur:
-        cur.execute(query)
+        cur.execute(query, params)
 
 
 def register_user(username, name, hash):
-    return f"INSERT INTO users (username, name, hash) VALUES('{username}', '{name}', '{hash}');"
+    query = "INSERT INTO users (user_handle, user_name, pass_hash) VALUES(%s, %s, %s);"
+    params = (username, name, hash)
+    return _insert(query, params)
 
 
 st.cache_data(ttl=60)
 def fetch_restaurants_avg():
-    #Average ratings of restaurants with at least one review
+    # Average ratings of restaurants with at least one review
     query = """
         SELECT re.res_name, count(rv.*) review_count,
             AVG(rv.food_rating) avg_food, AVG(rv.service_rating) avg_service, AVG(rv.price_rating) avg_price, AVG(rv.price_paid) avg_paid
