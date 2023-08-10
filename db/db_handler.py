@@ -37,6 +37,7 @@ def register_user(username, name, hash):
 
 st.cache_data(ttl=60)
 def fetch_restaurants_avg():
+    #Average ratings of restaurants with at least one review
     query = """
         SELECT re.res_name, count(rv.*) review_count,
             AVG(rv.food_rating) avg_food, AVG(rv.service_rating) avg_service, AVG(rv.price_rating) avg_price, AVG(rv.price_paid) avg_paid
@@ -45,7 +46,6 @@ def fetch_restaurants_avg():
         GROUP BY re.res_id
         HAVING COUNT(rv.*) > 0;
     """
-    st.write("Average ratings of restaurants with at least one review")
     return _fetch_all_no_params(query)
 
 
