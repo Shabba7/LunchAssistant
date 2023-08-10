@@ -3,7 +3,7 @@ import string
 import argparse
 import streamlit as st
 import streamlit_authenticator as stauth
-import db_handler
+import db.db_handler as db
 
 def generate_password(user):
     characters = string.ascii_letters + string.digits
@@ -17,10 +17,9 @@ def store_credential(username, name, password):
     # Hash password/passwords
     hashed_pass = stauth.Hasher([password]).generate()
 
-    conn = db_handler.init_connection()
-    conn.autocommit = True
-    query = db_handler.register_user(username, name, hashed_pass[0])
-    db_handler.insert_query(conn, query)
+    conn = db.init_connection()
+    query = db.register_user(username, name, hashed_pass[0])
+    db._insert(conn, query)
 
 def main():
     parser = argparse.ArgumentParser(description='Generate passwords based on input strings')

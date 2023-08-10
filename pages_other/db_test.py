@@ -1,19 +1,14 @@
+import db.db_handler as db
 import streamlit as st
 
 class Page:
-    cursor = None
-    def __init__(self, cursor) -> None:
-        self.cursor = cursor
-        pass
 
     def run(self):
         st.title("DB Test")
      
-        rows = self.cursor("SELECT * from test;")
+        rows = db.fetch_restaurants_avg()
+        st.write(rows)
 
-        # Print results.
-        for row in rows:
-            st.write(f"{row[0]} : {row[1]}")
 
 
 

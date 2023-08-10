@@ -1,6 +1,9 @@
-import streamlit as st
+import db.db_handler as db
 import pandas as pd
-import numpy as np
+import streamlit as st
+
+STRYPES_LAT  = 41.1578156070871
+STRYPES_LON = -8.635795928658316
 
 class Page:
     restaurants = 27
@@ -32,14 +35,14 @@ class Page:
         col4.metric(label="Ratinho do lixo", value="Edgar Moreira")
         col5.metric(label="Next Stop", value="---")
 
-        latitude = 41.1578156070871
-        longitude = -8.635795928658316
-        data = pd.DataFrame({
-            "lat": [latitude,41.16],
-            "lon": [longitude,longitude],
-            "size": [20, 6],
-            "color": ['#ff0000', '#00ff00']
-        })
+        def prep_row(row):
+            lon, lat = row[2][1:-1].split(',')
+            return (float(lat), float(lon), 6, '#00ff00')
+        rows = db.fetch_restaurants_location()
+        rows = list(map(prep_row, rows))
+        rows.append((STRYPES_LAT, STRYPES_LON, 20, '#ff0000'))
+
+        data = pd.DataFrame(rows, columns=['lat', 'lon', 'size', 'color'])
 
 
         # Display the map using st.map()

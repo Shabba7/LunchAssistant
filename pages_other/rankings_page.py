@@ -1,16 +1,17 @@
-import streamlit as st
+import db.db_handler as db
 import pandas as pd
+import streamlit as st
+
 
 class Page:
     restaurants = None
     df = None
     def __init__(self) -> None:
-        self.df = pd.read_csv("restaurant_reviews.csv")
+        self.df = self.prepare_restaurants_df()
         self.restaurants = self.df['Restaurant']
 
     def run(self):
         if search:=self.search():
-
             st.dataframe(self.get_restaurants_df(self.df, search),use_container_width=True, hide_index=True)
         else:
             st.dataframe(self.df,use_container_width=True, hide_index=True)
@@ -32,3 +33,7 @@ class Page:
             st.warning(f"Restaurants not found: {', '.join(not_found_restaurants)}")
 
         return filtered_df
+    
+    def prepare_restaurants_df(self):
+        rows = db.fetch_restaurants_avg()
+        return pd.DataFrame(rows, columns=['Restaurant','Nº Reviews', 'Food Rating','Service Rating','Price Rating','Price Paid'])
