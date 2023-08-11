@@ -38,7 +38,7 @@ class Page:
         def prep_row(row):
             lon, lat = row['res_loc'][1:-1].split(',')
             return (float(lat), float(lon), 6, '#00ff00')
-        rows = db.fetch_restaurants_location()
+        rows = db.fetch_restaurants_locations()
         rows = list(map(prep_row, rows))
         rows.append((STRYPES_LAT, STRYPES_LON, 20, '#ff0000'))
 

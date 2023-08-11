@@ -17,6 +17,8 @@ class Page:
     def run(self):
 
         _, authentication_status, username = self.authenticator.login('Login', 'main')
+        if authentication_status:
+            st.session_state['user_id'] = db.fetch_user_id(username)
         return (authentication_status, username)
 
     def _get_credentials_from_db(self):

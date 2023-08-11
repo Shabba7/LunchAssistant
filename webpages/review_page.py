@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 import os
+import db.db_handler as db
+from psycopg2.errors import UniqueViolation
+import datetime
+
 class Page:
     review_saved = None
 
@@ -8,48 +12,35 @@ class Page:
         self.page()
 
     def page(self):
-        st.title("Restaurant Review Submission")
+        st.title("Review Submission")
+        with st.form("review"):
+            # Input fields for user review
+            col1, col2 = st.columns(2)
+            options = db.fetch_restaurants_names()
 
-        # Input fields for user review
-        col1, col2 = st.columns(2)
+            with col1:
+                restaurant_name = st.selectbox("Restaurant Name",options=[rest[0] for rest in options])
+            with col2:
+                price_paid = st.number_input("Price Paid", min_value=0.0)
 
-        with col1:
-            restaurant_name = st.text_input("Restaurant Name")
-        with col2:
-            price_paid = st.number_input("Price Paid", min_value=0.0)
-
-        food_rating = st.slider("Food Rating", 0, 10, 5, help="Tell us how good was the food")
-        service_rating = st.slider("Service Rating", 0, 10, 5, help="Classify not only the service but the place as well")
-        price_rating = st.slider("Price Rating", 0, 10, 5,  help="How fair is the price?",)
-
-        _, _, center,_,_ = st.columns(5)
-        with center:
-            if st.button("Submit Review"):
+            food_rating    = st.slider("Food Rating", 0, 10, 5)
+            service_rating = st.slider("Service Rating", 0, 10, 5)
+            price_rating   = st.slider("Price Rating", 0, 10, 5)
+            if st.form_submit_button("Submit Review",use_container_width=True):
                 # Process the submitted review
-                review_data = {
-                    "Restaurant": restaurant_name,
-                    "FoodRating": food_rating,
-                    "ServiceRating": service_rating,
-                    "PriceRating": price_rating,
-                    "PricePaid": price_paid
-                }
-                if self._check_input(review_data):
-                    self.save_review_data(review_data)
+                if price_paid >= 4:
+                    try:
+                        db.submit_review(st.session_state['user_id'],
+                                        restaurant_name,
+                                        food_rating,
+                                        service_rating,
+                                        price_rating,
+                                        price_paid,
+                                        datetime.datetime.now()
+                                        )
+                        st.success("Review submitted successfully!")
+                    except UniqueViolation:
+                        st.error("You already reviewed this restaurant 😔")
                 else:
                     st.toast("Oops! Looks like your review is invalid")
-
-                # Confirmation message
-        if self.review_saved:
-            st.success("Review submitted successfully!")
-            self.review_saved = False
-
-    def _check_input(self, data):
-        return True if data['PricePaid'] > 4 else False
-
-    # Function to save the review data (You can customize this based on your storage preferences)
-    def save_review_data(self, review_data):
-        # For demonstration purposes, let's just append the data to a CSV file
-        df = pd.DataFrame([review_data])
-        df.to_csv("restaurant_reviews.csv", mode="a", header=not os.path.exists("restaurant_reviews.csv"), index=False)
-        self.review_saved = True
 

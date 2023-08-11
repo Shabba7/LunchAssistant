@@ -33,7 +33,7 @@ class Page:
             st.warning(f"Restaurants not found: {', '.join(not_found_restaurants)}")
 
         return filtered_df
-    
+
     def prepare_restaurants_df(self):
         rows = db.fetch_restaurants_avg()
         return pd.DataFrame(rows, columns=['Restaurant','Nº Reviews', 'Food Rating','Service Rating','Price Rating','Price Paid'])
