@@ -27,6 +27,7 @@ CREATE TABLE reviews(
     service_rating  INT NOT NULL CHECK (service_rating > 0),
     price_rating    INT NOT NULL CHECK (price_rating   > 0),
     price_paid      INT NOT NULL CHECK (price_paid     > 0),
+    review_date     TIMESTAMP NOT NULL,
     PRIMARY KEY (user_id, res_id)
 );
 

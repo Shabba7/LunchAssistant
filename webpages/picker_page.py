@@ -57,7 +57,7 @@ class Page:
         time_left = self.get_time_until_next_midday()
         st.write(f'###### Polls will close in {str(time_left).split(".")[0]}')
         progress_bar = st.progress(1)
-        progress_bar.progress(time_left.total_seconds() / (60*60*24))
+        progress_bar.progress(1- (time_left.total_seconds() / (60*60*24)))
         if time_left.total_seconds() <= 0:
             self.set_vote_started(False)
             self.set_vote_finished(True)

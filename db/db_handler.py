@@ -20,6 +20,11 @@ def init_connection():
 #         cur.execute(query)
 #         return cur.fetchall()
 
+def _fetch_one(query, params):
+    conn = init_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(query, params)
+        return cur.fetchone()[0]
 
 def _fetch_all_no_params(query):
     conn = init_connection()
@@ -27,17 +32,32 @@ def _fetch_all_no_params(query):
         cur.execute(query)
         return cur.fetchall()
 
-
 def _insert(query, params):
     conn = init_connection()
     with conn.cursor() as cur:
         cur.execute(query, params)
 
+def fetch_user_id(username):
+    query = "SELECT user_id FROM users WHERE user_handle = %s"
+    return _fetch_one(query,(username,))
 
 def register_user(username, name, hash):
     query = "INSERT INTO users (user_handle, user_name, pass_hash) VALUES(%s, %s, %s);"
-    return _insert(query, (username, name, hash))
+    _insert(query, (username, name, hash))
 
+def submit_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date):
+    # Get the restaurant ID from its name and insert review into the review table
+    query = """
+        WITH restaurant_id AS (
+            SELECT res_id
+            FROM restaurants
+            WHERE res_name = %s
+        )
+        INSERT INTO reviews (user_id, res_id, food_rating, service_rating, price_rating, price_paid, review_date)
+        VALUES (%s, (SELECT res_id FROM restaurant_id), %s, %s, %s, %s, %s);
+    """
+    values = (res_name, user_id, food_rating, service_rating, price_rating, price_paid, date)
+    _insert(query, values)
 
 st.cache_data(ttl=60)
 def fetch_restaurants_avg():
@@ -56,8 +76,11 @@ def fetch_restaurants_avg():
     return _fetch_all_no_params(query)
 
 
-def fetch_restaurants_location():
-    return _fetch_all_no_params("SELECT * from restaurants;")
+def fetch_restaurants_locations():
+    return _fetch_all_no_params("SELECT res_name, res_loc from restaurants;")
+
+def fetch_restaurants_names():
+    return _fetch_all_no_params("SELECT res_name from restaurants;")
 
 def get_credentials():
     return _fetch_all_no_params("SELECT user_handle, user_name, user_email, pass_hash FROM users;")
