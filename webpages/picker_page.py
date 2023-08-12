@@ -64,7 +64,8 @@ class Page:
     def add_restaurant(self):
 
         with st.form("restaurant_picker", clear_on_submit=True):
-            restaurant = st.text_input("Suggestion?", placeholder="Type your restaurant suggestion here...")
+            st.subheader("New restaurant?")
+            restaurant = st.text_input(" ", placeholder="Type your restaurant suggestion here...",label_visibility="collapsed")
             if st.form_submit_button("Submit"):
                 restaurants = [r.lower() for r in db.fetch_restaurants_names()]
                 if restaurant and restaurant.strip() != "" and restaurant.strip().lower() not in restaurants:
