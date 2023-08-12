@@ -11,14 +11,18 @@ def init_connection():
     return conn
 
 
-# def _fetch_all(conn, query):
-#     with conn.cursor() as cur:
-#         cur.execute(
-#             query,
-#             params=dict(owner=k, pet=pet_owners[k])
-#         )
-#         cur.execute(query)
-#         return cur.fetchall()
+def _fetch_one(query, params):
+    conn = init_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(query, params)
+        return cur.fetchone()
+
+
+def _fetch_all(query, params):
+    conn = init_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(query, params)
+        return cur.fetchall()
 
 def _fetch_one(query, params):
     conn = init_connection()
@@ -82,19 +86,29 @@ def fetch_restaurants_locations():
 def fetch_restaurants_names():
     return _fetch_all_no_params("SELECT res_name from restaurants;")
 
+st.cache_data(ttl=60)
+def fetch_restaurants_names():
+    names = _fetch_all_no_params("SELECT res_name from restaurants;")
+    return [name[0] for name in names]
+
+def register_restaurant(res_name, res_loc, res_user):
+    query = "INSERT INTO restaurants (res_name, res_loc, res_user) VALUES(%s, %s, %s);"
+    return _insert(query, (res_name, res_loc, res_user))
+
 def get_credentials():
     return _fetch_all_no_params("SELECT user_handle, user_name, user_email, pass_hash FROM users;")
 
 
 def reset_table():
-    with open(Path('db','create.sql'),'r') as create_file:
+    with open(Path("db", "create.sql"), "r") as create_file:
         create = create_file.read()
-    with open(Path('db','insert.sql'),'r') as insert_file:
+    with open(Path("db", "insert.sql"), "r") as insert_file:
         insert = insert_file.read()
     conn = init_connection()
     with conn.cursor() as cur:
         cur.execute(create)
         cur.execute(insert)
-        st.success('Now I Am Become Death, the Destroyer of Worlds')
+        st.success("Now I Am Become Death, the Destroyer of Worlds")
+
 
 # https://stackoverflow.com/questions/25577461/postgresql-earthdistance-earth-box-with-radius

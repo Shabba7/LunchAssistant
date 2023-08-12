@@ -1,8 +1,8 @@
-import streamlit as st
-import pandas as pd
-import random
-import altair as alt
 from datetime import datetime
+import db.db_handler as db
+import random
+import streamlit as st
+
 
 class Page:
 
@@ -16,7 +16,6 @@ class Page:
     def run(self):
         self.vote()
         self.add_restaurant()
-        self.list_restaurants()
 
     def vote(self):
         # Create a button to start the vote if within allowed timeslot
@@ -64,19 +63,20 @@ class Page:
 
     def add_restaurant(self):
 
-        with st.form("my_form", clear_on_submit=True):
-            restaurant = st.text_input('Add restaurant')
+        with st.form("restaurant_picker", clear_on_submit=True):
+            restaurant = st.text_input("Suggestion?", placeholder="Type your restaurant suggestion here...")
             if st.form_submit_button("Submit"):
-                if restaurant.strip() != "" and restaurant not in self.restaurants:
-                    self.add_restaurant_to_db(restaurant, self.user)
-                    st.toast("Restaurant added! Thanks for contributing!", icon='😍')
+                restaurants = [r.lower() for r in db.fetch_restaurants_names()]
+                if restaurant and restaurant.strip() != "" and restaurant.strip().lower() not in restaurants:
+                    db.register_restaurant(restaurant, '-8.62, 41.15', 1)
+                    st.info("Restaurant added! Thanks for contributing!", icon='😍')
+                elif restaurant and restaurant.strip() != "":
+                    st.info("Good pick! Someone already suggested one.", icon='😅')
 
-    def list_restaurants(self):
-        # Display the list of restaurants
-        st.write("### List of Restaurants")
 
-        # Displaying the table
-        #st.dataframe(self.df,use_container_width=True, hide_index=True)
+
+
+###################################################################
 
     def add_restaurant_to_db(restaurant, user):
         # TODO: Should add this to the DB list of restaurants
