@@ -27,14 +27,32 @@ class Page:
 
     def run(self):
         col1, col2, col3 = st.columns(3, gap="small")
-        col1.metric(label="Money spent this month", value=self.money, delta=133)
-        col2.metric(label="Reviews done this month", value=self.reviews, delta=7)
-        col3.metric(label="Restaurants visited this month", value=self.restaurants, delta=3)
+
+        # Metrics
+        col1.metric(label="Money spent this month",
+                    value=f'{db.fetch_money_spent_this_month()}€',
+                    delta=f'{db.fetch_money_spent_this_month() - db.fetch_money_spent_previous_month()}€')
+
+
+        col2.metric(label="Next stop", value=self._get_next_stop())
+
+        col3.metric(label="Restaurants visited this month",
+                    value=db.fetch_restaurants_visited_this_month(),
+                    delta=db.fetch_restaurants_visited_this_month() - db.fetch_restaurants_visited_previous_month())
 
         col4, col5, col6 = st.columns(3, gap="small")
-        col4.metric(label="Ratinho do lixo", value="Edgar Moreira")
-        col5.metric(label="Next Stop", value="---")
 
+        col4.metric(label='Total money spent', value=db.fetch_total_money_spent())
+
+        bs_name, bs_money = db.fetch_biggest_spender()
+        col5.metric(label="Ratinho do lixo 🐁", value=bs_name,delta=f'{bs_money}€',help="This will show last month's biggest spender.\nHe will have a free lunch paid by the rest")
+
+
+        col6.metric(label="Reviews done this month",
+                    value=db.fetch_reviews_done_this_month(),
+                    delta=db.fetch_reviews_done_this_month()-db.fetch_reviews_done_previous_month())
+
+        # Map
         def prep_row(row):
             lon, lat = row['res_loc'][1:-1].split(',')
             return (float(lat), float(lon), 6, '#00ff00')
@@ -47,3 +65,7 @@ class Page:
 
         # Display the map using st.map()
         st.map(data=data, zoom=15, size='size', color='color')
+
+    @staticmethod
+    def _get_next_stop():
+        return st.session_state['next_stop'] if 'next_stop' in st.session_state else "---"

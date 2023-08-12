@@ -23,11 +23,11 @@ CREATE TABLE restaurants (
 CREATE TABLE reviews(
     user_id         INT REFERENCES users(user_id)       NOT NULL,
     res_id          INT REFERENCES restaurants(res_id)  NOT NULL,
-    food_rating     INT NOT NULL CHECK (food_rating    > 0),
-    service_rating  INT NOT NULL CHECK (service_rating > 0),
-    price_rating    INT NOT NULL CHECK (price_rating   > 0),
-    price_paid      INT NOT NULL CHECK (price_paid     > 0),
-    review_date     TIMESTAMP NOT NULL,
+    food_rating     INT              NOT NULL CHECK (food_rating    > 0),
+    service_rating  INT              NOT NULL CHECK (service_rating > 0),
+    price_rating    INT              NOT NULL CHECK (price_rating   > 0),
+    price_paid      NUMERIC(5,2)     NOT NULL CHECK (price_paid     > 0),
+    review_date     TIMESTAMP        NOT NULL,
     PRIMARY KEY (user_id, res_id)
 );
 
