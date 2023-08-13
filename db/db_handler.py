@@ -20,7 +20,7 @@ def _fetch_one(query, params):
     logging.warning(f"Fetching @ {query} : {params}")
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         cur.execute(query, params)
-        return cur.fetchone()[0]
+        return cur.fetchone()
 
 def _fetch_one_no_params(query):
     conn = _init_connection()
@@ -175,14 +175,14 @@ def fetch_n_unknown_random_restaurants(nr):
     params = (nr,)
     return _fetch_all(query, params)
 
-def fetch_n_random_restaurants_with_rating(nr, rat):
+def fetch_n_random_restaurants_with_rating_gr(nr, rat):
     query = (
         "SELECT res_id, re.res_name, re.res_loc "
         "FROM restaurants re "
         "JOIN ( "
         "    SELECT res_id "
         "    FROM reviews "
-        "    WHERE food_rating > %s "
+        "    WHERE food_rating >= %s "
         "    GROUP BY res_id "
         ") filtered_res ON re.res_id = filtered_res.res_id "
         "ORDER BY RANDOM() "

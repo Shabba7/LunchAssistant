@@ -68,7 +68,8 @@ class Page:
     VOTE_CLOSE_HOUR = 12
 
     def run(self):
-        self.debug_menu()
+        if st.secrets["dev"]["dev_on"]:
+            self.debug_menu()
 
         if not self.is_vote_window_open():
             self.off_voting_hours()
@@ -127,7 +128,7 @@ class Page:
     def setup_vote(self):
         _,_,col,_,_ = st.columns(5)
         if col.button("Start new vote"):
-            restaurant_ids = db.fetch_n_random_restaurants(2)
+            restaurant_ids = db.fetch_n_random_restaurants(3)
             db.start_restaurant_election(restaurant_ids)
             st.experimental_rerun()
 
