@@ -1,14 +1,19 @@
-from webpages import (
-    admin_page,
-    main_page,
-    picker_page,
-    rankings_page,
-    login_page,
-    review_page,
-)
+import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from streamlit_option_menu import option_menu
-import streamlit as st
+from webpages import (
+    admin_page, login_page, main_page,
+    picker_page, rankings_page, review_page,
+)
+
+st.set_page_config(
+    page_title="Lunch Assistant",
+    page_icon="🍴",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
+# count = st_autorefresh(interval=1000, key="strefreshcounter")
 
 st.markdown(
     "<h1 style='text-align: center; color: #0F596E;'>Lunch Assistant</h1>",
@@ -22,33 +27,31 @@ if auth_status:
     map_tabs_to_obj = {
         "Home": main_page.Page(),
         "Ranking": rankings_page.Page(),
-        "Picker": picker_page.Page(user),
+        "Picker": picker_page.Page(),
         "Review": review_page.Page(),
         "Admin": admin_page.Page(),
     }
 
-    if user in ["emoreira","ngregori"]:
-        selected_menu = option_menu(
-            None,
-            ["Home", "Ranking", "Picker", "Review", "Admin"],
-            icons=["house", "arrow-down-up", "list-task", "pencil-square", "person-badge-fill"],
-            orientation="horizontal",
-        )
-    else:
-        selected_menu = option_menu(
-            None,
-            ["Home", "Ranking", "Picker", "Review"],
-            icons=["house", "arrow-down-up", "list-task", "pencil-square"],
-            orientation="horizontal",
-        )
+    tabs = ["Home", "Ranking", "Picker", "Review"]
+    icons = ["house", "arrow-down-up", "list-task", "pencil-square"]
+    if user in ["emoreira", "ngregori"]:
+        tabs =  ["Home", "Ranking", "Picker", "Review", "Admin"]
+        icons=["house", "arrow-down-up", "list-task", "pencil-square", "person-badge-fill"]
 
-    if (
-        selected_menu == "Picker"
-        and picker_page.Page.get_time_until_next_midday().total_seconds() < 60
-    ):
-        st_autorefresh(interval=1000)
-    else:
-        st_autorefresh(interval=60000)
+    selected_menu = option_menu(
+        None,
+        tabs,
+        icons=icons,
+        orientation="horizontal",
+    )
+
+    # if (
+    #     selected_menu == "Picker"
+    #     and picker_page.Page.get_time_until_next_midday().total_seconds() < 60
+    # ):
+    #     st_autorefresh(interval=100)
+    # else:
+    #     st_autorefresh(interval=100)
     map_tabs_to_obj[selected_menu].run()
 
 elif auth_status is None:

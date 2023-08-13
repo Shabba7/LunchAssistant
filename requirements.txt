@@ -1,7 +1,7 @@
-altair
-pandas
-psycopg2-binary
-streamlit
-streamlit_authenticator
-streamlit_autorefresh
-streamlit_option_menu
+altair==5.0.1
+pandas==2.0.3
+psycopg2-binary==2.9.7
+streamlit==1.25.0
+streamlit-authenticator==0.2.2
+streamlit-autorefresh==1.0.1
+streamlit-option-menu==0.3.6

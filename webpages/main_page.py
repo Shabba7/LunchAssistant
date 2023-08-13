@@ -10,7 +10,7 @@ class Page:
     money = 1500
     reviews = 142
     def __init__(self) -> None:
-        if not st.session_state["init_ran"]:
+        if "init_ran" not in st.session_state:
             st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
             st.markdown(
                 """
