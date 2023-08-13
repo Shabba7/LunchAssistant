@@ -36,7 +36,8 @@ window.onload = function () {
 
 <html>
   <h4 style='font-family: "Source Sans Pro", sans-serif; font-weight: 600; color: rgb(49, 51, 63); line-height: 1.2; margin-bottom: 0px; margin-top: 0px;'>Poll will close in <span id="time">...</span></h4>
-</html>
+  <progress id="file" max="100" value="70">70%</progress>
+  </html>
 """
     return timer_html
     # return timer_html
@@ -144,8 +145,8 @@ class Page:
             restaurant_id = [r[1] for r in restaurants if r[2] == choice][0]
             db.add_restaurant_vote(st.session_state["user_id"], restaurant_id)
             st.toast('Vote submitted!', icon='😍')
-        stcomponents.html(build_timer(time_left), height=30)
-        stcomponents.html(build_map(choice), height=450)
+        stcomponents.html(build_timer(time_left), height=50)
+        # stcomponents.html(build_map(choice), height=450)
 
     def calculate_times(self, start_time):
         end_time = start_time + timedelta(hours=4)

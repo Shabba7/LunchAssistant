@@ -81,10 +81,12 @@ def rebuild():
 
 
 # region User
+@st.cache_data(ttl=600)
 def fetch_user_id(username):
     query = "SELECT user_id FROM users WHERE user_handle = %s"
     return _fetch_one(query, (username,))
 
+@st.cache_data(ttl=600)
 def get_credentials():
     return _fetch_all_no_params("SELECT user_handle, user_name, user_email, pass_hash FROM users;")
 
