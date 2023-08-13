@@ -206,7 +206,7 @@ def register_restaurant(res_name, res_loc, res_user):
     query = "INSERT INTO restaurants (res_name, res_loc, res_user) VALUES(%s, %s, %s);"
     return _insert(query, (res_name, res_loc, res_user))
 
-st.cache_data(ttl=60)
+@st.cache_data(ttl=60)
 def fetch_restaurants_avg():
     # Average ratings of restaurants with at least one review
     query = (
