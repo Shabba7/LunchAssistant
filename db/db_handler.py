@@ -104,7 +104,7 @@ def is_restaurant_election_open():
 
 def fetch_restaurant_election_options(election_id):
     query = (
-        "SELECT e.start_time, r.res_id, r.res_name, r.res_loc "
+        "SELECT e.start_time, r.res_id, r.res_name "
         "FROM elections e "
         "JOIN restaurants r ON r.res_id = ANY(e.restaurant_ids) "
         "WHERE e.id = %s; "

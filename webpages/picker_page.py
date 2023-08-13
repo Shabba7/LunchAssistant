@@ -1,39 +1,26 @@
-# import datetime
-# class CustomDatetime(datetime.datetime):
-#     _hour = 9
-#     @classmethod
-#     def now(cls, tz=None):
-#         return super().now(tz).replace(hour=cls._hour, minute=0, second=0, microsecond=0)
-#     @classmethod
-#     def set_hour(cls, hour):
-#         cls._hour = hour
-#
-# datetime.datetime = CustomDatetime
-
-
-######################################################################
-
 import altair as alt
-import asyncio
 from datetime import datetime, timedelta
 import db.db_handler as db
 import pandas as pd
-import random
 import streamlit as st
 import streamlit.components.v1 as stcomponents
 
-my_html = """
+
+def build_timer(time):
+    timer_html = """
 <script>
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
     setInterval(function () {
-        minutes = parseInt(timer / 60, 10)
+        hours = parseInt(timer / 3600, 10);
+        minutes = parseInt((timer % 3600) / 60, 10);
         seconds = parseInt(timer % 60, 10);
 
+        hours = hours < 10 ? "0" + hours : hours;
         minutes = minutes < 10 ? "0" + minutes : minutes;
         seconds = seconds < 10 ? "0" + seconds : seconds;
 
-        display.textContent = minutes + ":" + seconds;
+        display.textContent = hours + ":" + minutes + ":" + seconds;
 
         if (--timer < 0) {
             timer = duration;
@@ -42,22 +29,38 @@ function startTimer(duration, display) {
 }
 
 window.onload = function () {
-    var fiveMinutes = 60 * 5,
-        display = document.querySelector('#time');
-    startTimer(fiveMinutes, display);
+    display = document.querySelector('#time');
+    startTimer("""+(str(time.total_seconds()))+""", display);
 };
 </script>
 
-<body>
-  <div>Registration closes in <span id="time">05:00</span> minutes!</div>
-</body>
+<html>
+  <h4 style='font-family: "Source Sans Pro", sans-serif; font-weight: 600; color: rgb(49, 51, 63); line-height: 1.2; margin-bottom: 0px; margin-top: 0px;'>Poll will close in <span id="time">...</span></h4>
+</html>
 """
+    return timer_html
+    # return timer_html
 
-async def periodic():
-    while True:
-        st.write("Hello world")
-        r = await asyncio.sleep(1)
-        st.write(f"asyncio sleep ? {r}")
+def build_map(choice):
+    name = choice.replace(" ", "+")
+    map_url = f'https://www.google.com/maps/embed/v1/directions\
+?key={st.secrets["google"]["api_key"]}\
+&origin=Rua+Monsenhor+Fonseca+Soares+44\
+&destination={name}+Porto\
+&mode=walking\
+&language=pt\
+&region=pt'
+
+    gmap = f'\
+        <iframe\
+        width="600" height="450"\
+        frameborder="0" style="border:0"\
+        referrerpolicy="no-referrer-when-downgrade"\
+        src="{map_url}"\
+        allowfullscreen>\
+        </iframe>\
+    '
+    return gmap
 
 class Page:
 
@@ -65,9 +68,6 @@ class Page:
     VOTE_CLOSE_HOUR = 12
 
     def run(self):
-        # stcomponents.html(my_html)
-        # asyncio.run(periodic())
-
         self.debug_menu()
 
         if not self.is_vote_window_open():
@@ -83,6 +83,10 @@ class Page:
             if st.button("FORCE CLOSE VOTE"):
                 db.end_restaurant_election()
 
+    @staticmethod
+    def is_vote_window_open():
+        return Page.VOTE_OPEN_HOUR <= datetime.now().time().hour <= Page.VOTE_CLOSE_HOUR
+
     def off_voting_hours(self):
         st.markdown(
             f"<p style='text-align: center; background-color:#fffce6; color: #926C05;'>Poll is closed at the moment 🥸<br>Come back tomorrow between {Page.VOTE_OPEN_HOUR}am and {Page.VOTE_CLOSE_HOUR}am!</p>",
@@ -92,6 +96,14 @@ class Page:
             self.latest_election()
         self.add_restaurant()
 
+    def on_voting_hours(self):
+        id = db.is_restaurant_election_open()
+        if not id:
+            self.setup_vote()
+        else:
+            self.vote(id)
+
+#region Voting
     def latest_election(self):
         votes, totals = db.fetch_lastest_election_data()
         df_votes = pd.DataFrame(votes, columns=['Who','Where'])
@@ -112,16 +124,6 @@ class Page:
         # Display votes list
         st.dataframe(df_votes, use_container_width=True, hide_index=True)
 
-    def on_voting_hours(self):
-        id = db.is_restaurant_election_open()
-        if not id:
-            self.setup_vote()
-        else:
-            self.vote(id)
-
-
-
-#region Voting
     def setup_vote(self):
         _,_,col,_,_ = st.columns(5)
         if col.button("Start new vote"):
@@ -132,50 +134,25 @@ class Page:
     def vote(self, id):
         restaurants = db.fetch_restaurant_election_options(id)
         names = [r["res_name"] for r in restaurants]
-        locs = [r["res_loc"] for r in restaurants]
         start_time = restaurants[0]["start_time"]
         time_left = self.calculate_times(start_time)
 
         st.write("### Select one:")
-        lcol, rcol = st.columns(2)
-        with lcol:
-            choice = st.radio(" ", names, label_visibility="collapsed")
-        with rcol:
-            st.write("SHOW DATA HERE")
-        _,ccol,_ = st.columns(3)
-        with ccol:
-            st.write(f'###### Poll will close in {str(time_left).split(".")[0]}')
-            if st.button("Submit/Update vote"):
-                restaurant_id = [r[1] for r in restaurants if r[2] == choice][0]
-                db.add_restaurant_vote(st.session_state["user_id"], restaurant_id)
-                st.toast('Vote submitted!', icon='😍')
+        choice = st.radio(" ", names, label_visibility="collapsed")
+        if st.button("Submit/Update vote"):
+            restaurant_id = [r[1] for r in restaurants if r[2] == choice][0]
+            db.add_restaurant_vote(st.session_state["user_id"], restaurant_id)
+            st.toast('Vote submitted!', icon='😍')
+        stcomponents.html(build_timer(time_left), height=30)
+        stcomponents.html(build_map(choice), height=450)
 
     def calculate_times(self, start_time):
-        end_time = self.get_time_n_hours_ahead(start_time, 4)
-        time_left = end_time - datetime.now()
-        return time_left
+        end_time = start_time + timedelta(hours=4)
+        return end_time - datetime.now()
 
     @staticmethod
     def is_vote_window_open():
         return Page.VOTE_OPEN_HOUR <= datetime.now().time().hour <= Page.VOTE_CLOSE_HOUR
-
-    def vote_in_progress(self):
-        # Create a radio button for the restaurants
-        st.write("### Select one:")
-        #chosen_restaurant = st.radio(" ", st.session_state["random_restaurants"])
-        time_left = self.get_time_until_next_midday()
-        st.write(f'###### Polls will close in {str(time_left).split(".")[0]}')
-        # progress_bar = st.progress(1)
-        # progress_bar.progress(1- (time_left.total_seconds() / (60*60*24)))
-        # if time_left.total_seconds() <= 0:
-        #     self.set_vote_started(False)
-        #     self.set_vote_finished(True)
-
-
-    @staticmethod
-    def get_time_n_hours_ahead(start, hours):
-        future_time = start + timedelta(hours=hours)
-        return future_time
 #endregion
 
 #region Add Restaurants
@@ -191,44 +168,3 @@ class Page:
                 elif restaurant and restaurant.strip() != "":
                     st.info("Good pick! Someone already suggested one.", icon='😅')
 #endregion
-
-
-###################################################################
-
-
-    def add_vote_to_restaurant(self):
-        # Check if user already voted in one restaurant and if he already did remove and add to the new one
-        # TODO: create DB call for this
-        pass
-
-    def get_restaurants_list(self):
-        # TODO: Return restaurant list from DB
-        pass
-
-    def pick_3_restaurants(self):
-        # TODO: This list has to be stored in the DB so that it does not change
-        self.random_restaurants = random.sample(self.get_restaurants_list(), 3).sort()
-        self.set_vote_started(True)
-        st.experimental_rerun()
-
-    def is_vote_finished(self):
-        # TODO: create DB to store this
-        st.session_state
-
-    def set_vote_started(self, status):
-        # TODO: create DB to store this
-        pass
-
-    def set_vote_finished(self, status):
-        # TODO: create DB to store this
-        pass
-
-    @staticmethod
-    def get_time_until_next_midday():
-        now = datetime.now()
-        midday = now.replace(hour=12, minute=0, second=0, microsecond=0)
-
-        if now > midday:
-            midday = midday.replace(day=midday.day + 1)
-
-        return (midday - now)
