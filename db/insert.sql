@@ -6,5 +6,5 @@ INSERT INTO restaurants (res_name, res_loc, res_user) VALUES('Mimo''s Smoke Hous
 INSERT INTO restaurants (res_name, res_loc, res_user) VALUES('Pizzaria Luzzo', '-8.633543714814978, 41.15845755163155', '1');
 INSERT INTO restaurants (res_name, res_loc, res_user) VALUES('San Remo', '-8.636919296674856, 41.15938796081641', '1');
 
-INSERT INTO reviews VALUES(1, 1, 5, 5, 4, 10,'2023-08-11 01:08:45.499393'); -- ngregorio review Passatempo
-INSERT INTO reviews VALUES(2, 1, 5, 4, 4, 15, '2023-08-12 01:08:45.499393'); -- emoreira review Passatempo
+INSERT INTO reviews VALUES(1, 1, 5, 5, 4, 11.12,'2023-08-11 01:08:45.499393'); -- ngregorio review Passatempo
+INSERT INTO reviews VALUES(2, 1, 5, 4, 4, 15.31, '2023-08-12 01:08:45.499393'); -- emoreira review Passatempo
