@@ -22,7 +22,7 @@ def _fetch_one(query, params):
     logging.warning(f"Fetching @ {query} : {params}")
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         cur.execute(query, params)
-        return cur.fetchone()
+        return cur.fetchone()[0]
 
 def _fetch_one_no_params(query):
     conn = _init_connection()
@@ -88,7 +88,7 @@ def fetch_user_id(username):
     query = "SELECT user_id FROM users WHERE user_handle = %s"
     return _fetch_one(query, (username,))
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=10)
 def get_credentials():
     return _fetch_all_no_params("SELECT user_handle, user_name, user_email, pass_hash FROM users;")
 
@@ -247,7 +247,7 @@ def fetch_restaurants_visited_this_month():
 @st.cache_data(ttl=10)
 def fetch_restaurants_visited_previous_month():
     # Query to calculate money spent
-    previous_month = date.today().strftime('%Y-%m')
+    previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_restaurants_visited_month(previous_month)
 
 def _fetch_restaurants_visited_month(month):
@@ -317,7 +317,7 @@ def fetch_reviews_done_this_month():
 @st.cache_data(ttl=10)
 def fetch_reviews_done_previous_month():
     # Query to count reviews done previous month
-    previous_month = date.today().strftime('%Y-%m')
+    previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_reviews_done_month(previous_month)
 
 def _fetch_reviews_done_month(month):

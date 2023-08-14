@@ -47,7 +47,7 @@ window.onload = function () {
   <center>
   <h4 style='font-family: "Source Sans Pro", sans-serif; font-weight: 600; color: rgb(49, 51, 63); line-height: 1.2; margin-bottom: 0px; margin-top: 0px;'>Poll will close in <span id="time">...</span></h4>
   </center>
-  <progress id="file" max="100" value=\""""+(str(100-((time.total_seconds() / 14400) * 100)))+"""\">70%</progress>
+  <progress id="file" max="100" value=\""""+(str(100-((time.total_seconds() / 14400) * 100)))+"""\"/progress>
   </html>
 """
     return timer_html

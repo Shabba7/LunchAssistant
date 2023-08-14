@@ -53,7 +53,7 @@ class Page:
 
     @staticmethod
     def is_vote_window_open():
-        return Page.VOTE_OPEN_HOUR <= datetime.now(pytz.timezone("Europe/London")).time().hour <= Page.VOTE_CLOSE_HOUR
+        return Page.VOTE_OPEN_HOUR <= datetime.now(pytz.timezone("Europe/London")).time().hour < Page.VOTE_CLOSE_HOUR
 
     def off_voting_hours(self):
         st.markdown(
@@ -116,7 +116,7 @@ class Page:
         # stcomponents.html(build_map(choice), height=450)
 
     def calculate_times(self):
-        end_time = datetime.now(pytz.timezone("Europe/London")).replace(hour=Page.VOTE_CLOSE_HOUR)
+        end_time = datetime.now(pytz.timezone("Europe/London")).replace(hour=Page.VOTE_CLOSE_HOUR,minute=0,second=0)
         return end_time - datetime.now(pytz.timezone("Europe/London"))
 
 #endregion

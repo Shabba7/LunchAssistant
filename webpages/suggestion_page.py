@@ -23,5 +23,5 @@ class Page:
             st.subheader("What can we improve?")
             suggestion = st.text_area(" ")
             if st.form_submit_button("Submit"):
-                db.store_suggestion(st.session_state['user_id'][0],suggestion)
+                db.store_suggestion(st.session_state['user_id'],suggestion)
                 st.success("Thank you for your suggestion!")
