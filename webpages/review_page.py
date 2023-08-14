@@ -4,6 +4,7 @@ import os
 import db.db_handler as db
 from psycopg2.errors import UniqueViolation
 import datetime
+import pytz
 
 class Page:
     review_saved = None
@@ -36,7 +37,7 @@ class Page:
                                         service_rating,
                                         price_rating,
                                         price_paid,
-                                        datetime.datetime.now()
+                                        datetime.datetime.now(pytz.timezone("Europe/London"))
                                         )
                         st.success("Review submitted successfully!")
                     except UniqueViolation:

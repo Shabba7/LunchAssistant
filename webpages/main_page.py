@@ -26,6 +26,7 @@ class Page:
             )
 
     def run(self):
+
         col1, col2, col3 = st.columns(3, gap="small")
 
         # Metrics

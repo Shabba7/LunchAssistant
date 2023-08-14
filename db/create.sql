@@ -48,6 +48,12 @@ CREATE TABLE votes (
     PRIMARY KEY (election_id, voter_id, restaurant_id)
 );
 
+CREATE TABLE chat_messages (
+    message_id  SERIAL PRIMARY KEY,
+    user_id     INT REFERENCES users(user_id) NOT NULL,
+    message     TEXT NOT NULL,
+    timestamp   TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
 ------------------------------------------
 --           FUNCTIONS

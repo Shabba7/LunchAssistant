@@ -4,43 +4,8 @@ import db.db_handler as db
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as stcomponents
-
-
-def build_timer(time):
-    timer_html = """
-<script>
-function startTimer(duration, display) {
-    var timer = duration, minutes, seconds;
-    setInterval(function () {
-        hours = parseInt(timer / 3600, 10);
-        minutes = parseInt((timer % 3600) / 60, 10);
-        seconds = parseInt(timer % 60, 10);
-
-        hours = hours < 10 ? "0" + hours : hours;
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        display.textContent = hours + ":" + minutes + ":" + seconds;
-
-        if (--timer < 0) {
-            timer = duration;
-        }
-    }, 1000);
-}
-
-window.onload = function () {
-    display = document.querySelector('#time');
-    startTimer("""+(str(time.total_seconds()))+""", display);
-};
-</script>
-
-<html>
-  <h4 style='font-family: "Source Sans Pro", sans-serif; font-weight: 600; color: rgb(49, 51, 63); line-height: 1.2; margin-bottom: 0px; margin-top: 0px;'>Poll will close in <span id="time">...</span></h4>
-  <progress id="file" max="100" value="70">70%</progress>
-  </html>
-"""
-    return timer_html
-    # return timer_html
+import css.progress_bar as pb
+import pytz
 
 def build_map(choice):
     name = choice.replace(" ", "+")
@@ -69,6 +34,7 @@ class Page:
     VOTE_CLOSE_HOUR = 12
 
     def run(self):
+
         if st.secrets["dev"]["dev_on"]:
             self.debug_menu()
 
@@ -87,7 +53,7 @@ class Page:
 
     @staticmethod
     def is_vote_window_open():
-        return Page.VOTE_OPEN_HOUR <= datetime.now().time().hour <= Page.VOTE_CLOSE_HOUR
+        return Page.VOTE_OPEN_HOUR <= datetime.now(pytz.timezone("Europe/London")).time().hour <= Page.VOTE_CLOSE_HOUR
 
     def off_voting_hours(self):
         st.markdown(
@@ -96,7 +62,6 @@ class Page:
         )
         with st.expander("Latest poll", expanded = True):
             self.latest_election()
-        self.add_restaurant()
 
     def on_voting_hours(self):
         id = db.is_restaurant_election_open()
@@ -130,43 +95,28 @@ class Page:
         _,_,col,_,_ = st.columns(5)
         if col.button("Start new vote"):
             restaurant_ids = db.fetch_n_random_restaurants(3)
+            # TODO: Check if this is needed
             db.start_restaurant_election(restaurant_ids)
             st.experimental_rerun()
 
     def vote(self, id):
         restaurants = db.fetch_restaurant_election_options(id)
         names = [r["res_name"] for r in restaurants]
-        start_time = restaurants[0]["start_time"]
-        time_left = self.calculate_times(start_time)
+        time_left = self.calculate_times()
 
         st.write("### Select one:")
         choice = st.radio(" ", names, label_visibility="collapsed")
-        if st.button("Submit/Update vote"):
+        stcomponents.html(pb.build_timer(time_left), height=50)
+        _, center, _ = st.columns([0.24, 0.3, 0.1])
+
+        if center.button("Submit/Update vote"):
             restaurant_id = [r[1] for r in restaurants if r[2] == choice][0]
             db.add_restaurant_vote(st.session_state["user_id"], restaurant_id)
             st.toast('Vote submitted!', icon='😍')
-        stcomponents.html(build_timer(time_left), height=50)
         # stcomponents.html(build_map(choice), height=450)
 
-    def calculate_times(self, start_time):
-        end_time = start_time + timedelta(hours=4)
-        return end_time - datetime.now()
+    def calculate_times(self):
+        end_time = datetime.now(pytz.timezone("Europe/London")).replace(hour=Page.VOTE_CLOSE_HOUR)
+        return end_time - datetime.now(pytz.timezone("Europe/London"))
 
-    @staticmethod
-    def is_vote_window_open():
-        return Page.VOTE_OPEN_HOUR <= datetime.now().time().hour <= Page.VOTE_CLOSE_HOUR
-#endregion
-
-#region Add Restaurants
-    def add_restaurant(self):
-        with st.form("restaurant_picker", clear_on_submit=True):
-            st.subheader("New restaurant?")
-            restaurant = st.text_input(" ", placeholder="Type your restaurant suggestion here...",label_visibility="collapsed")
-            if st.form_submit_button("Submit"):
-                restaurants = [r.lower() for r in db.fetch_restaurants_names()]
-                if restaurant and restaurant.strip() != "" and restaurant.strip().lower() not in restaurants:
-                    db.register_restaurant(restaurant, '-8.62, 41.15', st.session_state['user_id'])
-                    st.info("Restaurant added! Thanks for contributing!", icon='😍')
-                elif restaurant and restaurant.strip() != "":
-                    st.info("Good pick! Someone already suggested one.", icon='😅')
 #endregion

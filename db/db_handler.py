@@ -349,4 +349,10 @@ def submit_review(user_id, res_name, food_rating, service_rating, price_rating, 
 # endregion
 
 
+def store_suggestion(user_id, msg):
+    # Store message and user_id into database
+    query = "INSERT INTO chat_messages (user_id, message) VALUES (%s, %s);"
+    _insert(query,(user_id, msg))
+
+
 # https://stackoverflow.com/questions/25577461/postgresql-earthdistance-earth-box-with-radius

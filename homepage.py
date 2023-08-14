@@ -4,6 +4,7 @@ from streamlit_option_menu import option_menu
 from webpages import (
     admin_page, login_page, main_page,
     picker_page, rankings_page, review_page,
+    suggestion_page
 )
 
 st.set_page_config(
@@ -20,6 +21,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;font-size: 26px;} </style>', unsafe_allow_html=True)
+st.markdown(
+    """
+<style>
+[role=radiogroup]{
+gap: 3rem;
+display: flex;
+justify-content: space-evenly;
+}
+
+
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
 auth_status, user = login_page.Page().run()
 
 if auth_status:
@@ -29,14 +47,15 @@ if auth_status:
         "Ranking": rankings_page.Page(),
         "Picker": picker_page.Page(),
         "Review": review_page.Page(),
+        "Suggest": suggestion_page.Page(),
         "Admin": admin_page.Page(),
     }
 
-    tabs = ["Home", "Ranking", "Picker", "Review"]
-    icons = ["house", "arrow-down-up", "list-task", "pencil-square"]
-    if user in ["emoreira", "ngregori"]:
-        tabs =  ["Home", "Ranking", "Picker", "Review", "Admin"]
-        icons=["house", "arrow-down-up", "list-task", "pencil-square", "person-badge-fill"]
+    tabs = ["Home", "Ranking", "Picker", "Review", "Suggest"]
+    icons = ["house", "arrow-down-up", "list-task", "pencil-square", "bookmark-plus-fill"]
+    if user in [ "emoreira", "ngregori"]:
+        tabs =  ["Home", "Ranking", "Picker", "Review", "Suggest", "Admin"]
+        icons=["house", "arrow-down-up", "list-task", "pencil-square", "bookmark-plus-fill", "person-badge-fill"]
 
     selected_menu = option_menu(
         None,
