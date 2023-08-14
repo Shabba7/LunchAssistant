@@ -272,14 +272,14 @@ def fetch_restaurants_avg():
         "    ROUND(AVG(rv.food_rating),2) avg_food, "
         "    ROUND(AVG(rv.service_rating),2) avg_service, "
         "    ROUND(AVG(rv.price_rating),2) avg_price, "
-        "    ROUND(AVG(rv.price_paid),2) avg_paid "
+        "    ROUND(AVG(rv.price_paid),2) avg_paid, "
+        "    ROUND(AVG(rv.food_rating) * 0.60 + AVG(rv.service_rating) * 0.15 + AVG(rv.price_rating) * 0.25, 2) overall_rating "
         "FROM restaurants re "
         "LEFT JOIN reviews rv ON re.res_id = rv.res_id "
         "GROUP BY re.res_id "
         "HAVING COUNT(rv.*) > 0; "
     )
     return _fetch_all_no_params(query)
-# endregion
 
 @st.cache_data(ttl=10)
 def fetch_total_money_spent():
