@@ -233,8 +233,8 @@ def _fetch_money_spent_month(month):
         AND EXTRACT(MONTH FROM review_date) = EXTRACT(MONTH FROM TIMESTAMP '{month}-01')
     """
 
-    if not (money := _fetch_one_no_params(query)[0]):
-        money=0
+    result = _fetch_one_no_params(query)
+    money = result if result else 0
 
     return float(money)
 
@@ -259,7 +259,7 @@ def _fetch_restaurants_visited_month(month):
         AND EXTRACT(MONTH FROM review_date) = EXTRACT(MONTH FROM TIMESTAMP '{month}-01')
     """
 
-    if not (restaurants := _fetch_one_no_params(query)[0]):
+    if not (restaurants := _fetch_one_no_params(query)):
         restaurants=0
 
     return restaurants
@@ -285,7 +285,9 @@ def fetch_restaurants_avg():
 def fetch_total_money_spent():
     # Query to calculate total money spent
     query = "SELECT SUM(price_paid) FROM reviews"
-    return float(_fetch_one_no_params(query)[0])
+    result = _fetch_one_no_params(query)
+    result = result if result else 0
+    return float(result)
 
 @st.cache_data(ttl=10)
 def fetch_biggest_spender():
@@ -301,10 +303,10 @@ def fetch_biggest_spender():
         ORDER BY total_spending DESC
         LIMIT 1
     """
-    if not (bigest_spender := _fetch_one_no_params(query)):
-        bigest_spender = ('---','---')
 
-    return bigest_spender
+    result = _fetch_all_no_params(query)
+
+    return result[0] if result else ('---','---')
 
 @st.cache_data(ttl=10)
 def fetch_reviews_done_this_month():
@@ -327,10 +329,7 @@ def _fetch_reviews_done_month(month):
         AND EXTRACT(MONTH FROM review_date) = EXTRACT(MONTH FROM TIMESTAMP '{month}-01')
     """
 
-    if not (reviews := _fetch_one_no_params(query)[0]):
-        reviews=0
-
-    return reviews
+    return _fetch_one_no_params(query)
 
 
 # region Review

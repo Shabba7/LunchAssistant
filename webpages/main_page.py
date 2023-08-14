@@ -31,7 +31,7 @@ class Page:
         # Metrics
         col1.metric(label="Money spent this month",
                     value=f'{db.fetch_money_spent_this_month()}€',
-                    delta=f'{db.fetch_money_spent_this_month() - db.fetch_money_spent_previous_month()}€')
+                    delta=f'{round(db.fetch_money_spent_this_month() - db.fetch_money_spent_previous_month(),2)}€')
 
 
         col2.metric(label="Next stop", value=self._get_next_stop())
