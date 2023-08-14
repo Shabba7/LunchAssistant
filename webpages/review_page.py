@@ -4,6 +4,7 @@ import os
 import db.db_handler as db
 from psycopg2.errors import UniqueViolation
 import datetime
+import pytz
 
 class Page:
     review_saved = None
@@ -19,13 +20,13 @@ class Page:
             options = db.fetch_restaurants_names()
 
             with col1:
-                restaurant_name = st.selectbox("Restaurant Name",options=[rest[0] for rest in options])
+                restaurant_name = st.selectbox("Restaurant Name",options=options)
             with col2:
                 price_paid = st.number_input("Price Paid", min_value=0.0)
 
             food_rating    = st.slider("Food Rating", 0, 10, 5)
             service_rating = st.slider("Service Rating", 0, 10, 5)
-            price_rating   = st.slider("Price Rating", 0, 10, 5)
+            price_rating   = st.slider("Price Rating", 0, 10, 5, help="0 - too expensive | 10 - awesomely cheap")
             if st.form_submit_button("Submit Review",use_container_width=True):
                 # Process the submitted review
                 if price_paid >= 4:
@@ -36,7 +37,7 @@ class Page:
                                         service_rating,
                                         price_rating,
                                         price_paid,
-                                        datetime.datetime.now()
+                                        datetime.datetime.now(pytz.timezone("Europe/London"))
                                         )
                         st.success("Review submitted successfully!")
                     except UniqueViolation:

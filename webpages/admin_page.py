@@ -52,4 +52,5 @@ class Page:
 
         _,_,col,_,_ = st.columns(5)
         if col.button("NUKE"):
-            db.reset_table()
+            db.rebuild()
+            st.success("Now I Am Become Death, the Destroyer of Worlds")
