@@ -1,9 +1,8 @@
 import db.db_handler as db
 import pandas as pd
 import streamlit as st
-
-STRYPES_LAT  = 41.1578156070871
-STRYPES_LON = -8.635795928658316
+import pydeck as pdk
+import colorsys
 
 class Page:
     restaurants = 27
@@ -12,18 +11,6 @@ class Page:
     def __init__(self) -> None:
         if "init_ran" not in st.session_state:
             st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
-            st.markdown(
-                """
-            <style>
-            [role=radiogroup]{
-            gap: 3rem;
-            display: flex;
-            justify-content: space-evenly;
-            }
-            </style>
-            """,
-                unsafe_allow_html=True,
-            )
 
     def run(self):
 
@@ -54,19 +41,78 @@ class Page:
                     delta=db.fetch_reviews_done_this_month()-db.fetch_reviews_done_previous_month())
 
         # Map
-        def prep_row(row):
-            lon, lat = row['res_loc'][1:-1].split(',')
-            return (float(lat), float(lon), 6, '#00ff00')
-        rows = db.fetch_restaurants_locations()
-        rows = list(map(prep_row, rows))
-        rows.append((STRYPES_LAT, STRYPES_LON, 20, '#ff0000'))
-
-        data = pd.DataFrame(rows, columns=['lat', 'lon', 'size', 'color'])
-
-
-        # Display the map using st.map()
-        st.map(data=data, zoom=15, size='size', color='color')
+        self.generate_map()
 
     @staticmethod
     def _get_next_stop():
         return st.session_state['next_stop'] if 'next_stop' in st.session_state else "---"
+
+    @staticmethod
+    def generate_map():
+        STRYPES_LAT = st.secrets["strypes_geo"]["latitude"]
+        STRYPES_LON = st.secrets["strypes_geo"]["longitude"]
+        view_state = pdk.ViewState(latitude=STRYPES_LAT,
+                            longitude=STRYPES_LON,
+                            zoom=15,
+                            pitch=0)
+
+        rows = db.fetch_restaurant_to_map()
+        rows = list(map(prep_row, rows))
+        rows.append(('Strypes HQ', STRYPES_LAT, STRYPES_LON, 15, [16,89,110]))
+        data = pd.DataFrame(rows, columns=['name', 'lat', 'lon', 'size', 'color'])
+
+        tooltip = {"text": "{name}"}
+
+        slayer = pdk.Layer(
+            type='ScatterplotLayer',
+            data=data,
+            get_position=["lon", "lat"],
+            get_color="color",
+            get_line_color=[0, 0, 0],
+            get_radius="size",
+            pickable=True,
+            onClick=True,
+            filled=True,
+            line_width_min_pixels=10,
+            opacity=2,
+        )
+
+        pp = pdk.Deck(
+            initial_view_state=view_state,
+            map_provider='mapbox',
+            map_style=pdk.map_styles.MAPBOX_LIGHT,
+            layers=[
+                slayer,
+            ],
+            tooltip=tooltip
+        )
+
+        st.pydeck_chart(pp)
+
+
+def prep_row(row):
+    lon, lat = row['res_loc'][1:-1].split(',')
+    color = _prep_row_color(row['overall_rating'])
+
+    return (f"{row['res_name']}\nRating: {row['overall_rating']}", float(lat), float(lon), 10, color)
+
+def _prep_row_color(rating):
+    # Normalize the value to the range [0, 1]
+    normalized_value = float(rating) / 10.0
+
+    # Map normalized value to hue in HSV
+    hue = normalized_value * 120  # Red (0) to Green (120) in HSV
+
+    # Set saturation and value to 100% (maximum)
+    saturation = 1.0
+    value = 1.0
+
+    # Convert HSV to RGB
+    r, g, b = colorsys.hsv_to_rgb(hue / 360.0, saturation, value)
+
+    # Scale RGB values to [0, 255]
+    r = int(r * 255)
+    g = int(g * 255)
+    b = int(b * 255)
+
+    return [r,g,b]
