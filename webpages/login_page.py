@@ -20,6 +20,7 @@ class Page:
             st.session_state['user_id'] = db.fetch_user_id(username)
         return (authentication_status, username)
 
+    @st.cache_data(ttl=600)
     def _get_credentials_from_db(_self):
         credentials_dict = {'usernames': {}}
         # Populate credentials dict with users from DB

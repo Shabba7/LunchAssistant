@@ -50,4 +50,5 @@ window.onload = function () {
   <progress id="file" max="100" value=\""""+(str(100-((time.total_seconds() / 14400) * 100)))+"""\"/progress>
   </html>
 """
+    #TODO: remove 14400 and use delta time
     return timer_html
