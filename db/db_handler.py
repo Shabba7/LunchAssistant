@@ -22,7 +22,7 @@ def _fetch_one(query, params):
     logging.warning(f"Fetching @ {query} : {params}")
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
         cur.execute(query, params)
-        return cur.fetchone()
+        return cur.fetchone()[0]
 
 def _fetch_one_no_params(query):
     conn = _init_connection()
@@ -88,7 +88,7 @@ def fetch_user_id(username):
     query = "SELECT user_id FROM users WHERE user_handle = %s"
     return _fetch_one(query, (username,))
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=10)
 def get_credentials():
     return _fetch_all_no_params("SELECT user_handle, user_name, user_email, pass_hash FROM users;")
 
@@ -132,29 +132,30 @@ def add_restaurant_vote(voter_id, restaurant_id):
         print("Error:", e)
 
 def fetch_lastest_election_data():
-    q_votes = (
-        "SELECT u.user_name, r.res_name "
-        "FROM users u "
-        "JOIN votes v ON u.user_id = v.voter_id "
-        "JOIN restaurants r ON v.restaurant_id = r.res_id "
-        "JOIN elections el ON v.election_id = el.id "
-        "WHERE el.id = (SELECT id FROM elections ORDER BY start_time DESC LIMIT 1) "
-        "ORDER BY u.user_name; "
-    )
-    q_total = (
-        "SELECT r.res_name, COALESCE(COUNT(v.restaurant_id), 0) AS total_votes "
-        "FROM (SELECT * FROM elections ORDER BY start_time DESC LIMIT 1) e "
-        "JOIN restaurants r ON r.res_id = ANY(e.restaurant_ids) "
-        "LEFT JOIN votes v ON r.res_id = v.restaurant_id "
-        "GROUP BY r.res_name, e.id "
-        "ORDER BY total_votes DESC, r.res_name; "
-    )
+    q_votes = """
+        SELECT u.user_name, r.res_name
+        FROM users u
+        JOIN votes v ON u.user_id = v.voter_id
+        JOIN restaurants r ON v.restaurant_id = r.res_id
+        JOIN elections el ON v.election_id = el.id
+        WHERE el.id = (SELECT id FROM elections ORDER BY start_time DESC LIMIT 1)
+        ORDER BY u.user_name;
+    """
+
+    q_total = """
+        SELECT r.res_name, COALESCE(COUNT(v.restaurant_id), 0) AS total_votes
+            FROM restaurants r
+            JOIN elections el ON r.res_id = ANY(el.restaurant_ids)
+            LEFT JOIN votes v ON r.res_id = v.restaurant_id
+            AND v.election_id = el.id
+            WHERE el.start_time = (SELECT MAX(start_time) FROM elections)
+            GROUP BY r.res_name
+            ORDER BY total_votes DESC, r.res_name;
+    """
     results = _batch_fetch_all_no_params([q_votes, q_total])
     return results[0], results[1]
 # endregion
 
-
-# region Restaurant
 def fetch_restaurants_names():
     names = _fetch_all_no_params("SELECT res_name from restaurants;")
     return [name[0] for name in names]
@@ -210,7 +211,6 @@ def register_restaurant(res_name, res_loc, res_user):
     query = "INSERT INTO restaurants (res_name, res_loc, res_user) VALUES(%s, %s, %s);"
     return _insert(query, (res_name, res_loc, res_user))
 
-@st.cache_data(ttl=60)
 @st.cache_data(ttl=10)
 def fetch_money_spent_this_month():
     # Query to calculate money spent in the current month
@@ -247,7 +247,7 @@ def fetch_restaurants_visited_this_month():
 @st.cache_data(ttl=10)
 def fetch_restaurants_visited_previous_month():
     # Query to calculate money spent
-    previous_month = date.today().strftime('%Y-%m')
+    previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_restaurants_visited_month(previous_month)
 
 def _fetch_restaurants_visited_month(month):
@@ -264,7 +264,7 @@ def _fetch_restaurants_visited_month(month):
 
     return restaurants
 
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=2)
 def fetch_restaurants_avg():
     # Average ratings of restaurants with at least one review
     query = (
@@ -272,14 +272,14 @@ def fetch_restaurants_avg():
         "    ROUND(AVG(rv.food_rating),2) avg_food, "
         "    ROUND(AVG(rv.service_rating),2) avg_service, "
         "    ROUND(AVG(rv.price_rating),2) avg_price, "
-        "    ROUND(AVG(rv.price_paid),2) avg_paid "
+        "    ROUND(AVG(rv.price_paid),2) avg_paid, "
+        "    ROUND(AVG(rv.food_rating) * 0.60 + AVG(rv.service_rating) * 0.15 + AVG(rv.price_rating) * 0.25, 2) overall_rating "
         "FROM restaurants re "
         "LEFT JOIN reviews rv ON re.res_id = rv.res_id "
         "GROUP BY re.res_id "
         "HAVING COUNT(rv.*) > 0; "
     )
     return _fetch_all_no_params(query)
-# endregion
 
 @st.cache_data(ttl=10)
 def fetch_total_money_spent():
@@ -288,6 +288,18 @@ def fetch_total_money_spent():
     result = _fetch_one_no_params(query)
     result = result if result else 0
     return float(result)
+
+def fetch_restaurant_to_map():
+    query = """
+        SELECT r.res_name, r.res_loc,
+        ROUND(AVG(rv.food_rating) * 0.60 + AVG(rv.service_rating) * 0.15 + AVG(rv.price_rating) * 0.25, 2) AS overall_rating
+        FROM restaurants r
+        JOIN reviews rv ON r.res_id = rv.res_id
+        GROUP BY r.res_name, r.res_loc
+        HAVING COUNT(rv.res_id) > 0
+        ORDER BY overall_rating DESC;
+    """
+    return _fetch_all_no_params(query)
 
 @st.cache_data(ttl=10)
 def fetch_biggest_spender():
@@ -317,7 +329,7 @@ def fetch_reviews_done_this_month():
 @st.cache_data(ttl=10)
 def fetch_reviews_done_previous_month():
     # Query to count reviews done previous month
-    previous_month = date.today().strftime('%Y-%m')
+    previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_reviews_done_month(previous_month)
 
 def _fetch_reviews_done_month(month):
@@ -330,7 +342,6 @@ def _fetch_reviews_done_month(month):
     """
 
     return _fetch_one_no_params(query)
-
 
 # region Review
 def submit_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date):

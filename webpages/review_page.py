@@ -31,7 +31,7 @@ class Page:
                 # Process the submitted review
                 if price_paid >= 4:
                     try:
-                        db.submit_review(st.session_state['user_id'][0],
+                        db.submit_review(st.session_state['user_id'],
                                         restaurant_name,
                                         food_rating,
                                         service_rating,

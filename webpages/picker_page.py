@@ -19,7 +19,9 @@ def build_map(choice):
 
     gmap = f'\
         <iframe\
-        width="600" height="450"\
+        resize: both;\
+        overflow: auto;\
+        width="800" height="450"\
         frameborder="0" style="border:0"\
         referrerpolicy="no-referrer-when-downgrade"\
         src="{map_url}"\
@@ -47,13 +49,13 @@ class Page:
         with st.sidebar:
             st.header("DEBUG MENU")
             Page.VOTE_OPEN_HOUR = st.number_input("OPEN HOUR", value=Page.VOTE_OPEN_HOUR, min_value=0, max_value=Page.VOTE_CLOSE_HOUR-1)
-            Page.VOTE_CLOSE_HOUR = st.number_input("CLOSE HOUR", value=Page.VOTE_CLOSE_HOUR, min_value=Page.VOTE_OPEN_HOUR+1, max_value=23)
+            Page.VOTE_CLOSE_HOUR = st.number_input("CLOSE HOUR", value=Page.VOTE_CLOSE_HOUR, min_value=Page.VOTE_OPEN_HOUR+1, max_value=24)
             if st.button("FORCE CLOSE VOTE"):
                 db.end_restaurant_election()
 
     @staticmethod
     def is_vote_window_open():
-        return Page.VOTE_OPEN_HOUR <= datetime.now(pytz.timezone("Europe/London")).time().hour <= Page.VOTE_CLOSE_HOUR
+        return Page.VOTE_OPEN_HOUR <= datetime.now(pytz.timezone("Europe/London")).time().hour < Page.VOTE_CLOSE_HOUR
 
     def off_voting_hours(self):
         st.markdown(
@@ -113,10 +115,10 @@ class Page:
             restaurant_id = [r[1] for r in restaurants if r[2] == choice][0]
             db.add_restaurant_vote(st.session_state["user_id"], restaurant_id)
             st.toast('Vote submitted!', icon='😍')
-        # stcomponents.html(build_map(choice), height=450)
+        stcomponents.html(build_map(choice), height=450)
 
     def calculate_times(self):
-        end_time = datetime.now(pytz.timezone("Europe/London")).replace(hour=Page.VOTE_CLOSE_HOUR)
+        end_time = datetime.now(pytz.timezone("Europe/London")).replace(hour=Page.VOTE_CLOSE_HOUR,minute=0,second=0)
         return end_time - datetime.now(pytz.timezone("Europe/London"))
 
 #endregion

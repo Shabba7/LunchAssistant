@@ -38,7 +38,7 @@ class Page:
             st.subheader("What can we improve?")
             suggestion = st.text_area(" ")
             if st.form_submit_button("Submit"):
-                db.store_suggestion(st.session_state['user_id'][0],suggestion)
+                db.store_suggestion(st.session_state['user_id'],suggestion)
                 st.success("Thank you for your suggestion!")
 
     def great_suggestion(self):
@@ -58,7 +58,7 @@ class Page:
                 restaurant_name = details["result"]["name"]
                 restaurant_loc = details["result"]["geometry"]["location"]
                 if restaurant_name not in db.fetch_restaurants_names():
-                    db.register_restaurant(restaurant_name, f'{restaurant_loc["lng"]},{restaurant_loc["lat"]}', st.session_state['user_id'][0])
+                    db.register_restaurant(restaurant_name, f'{restaurant_loc["lng"]},{restaurant_loc["lat"]}', st.session_state['user_id'])
                     st.info("Restaurant added! Thanks for contributing!", icon='😍')
                 else:
                     st.info("Good pick! Someone already suggested it.", icon='😅')

@@ -35,5 +35,7 @@ class Page:
         return filtered_df
 
     def prepare_restaurants_df(self):
-        rows = db.fetch_restaurants_avg()
-        return pd.DataFrame(rows, columns=['Restaurant','Nº Reviews', 'Food Rating','Service Rating','Price Rating','Price Paid'])
+        data = pd.DataFrame(db.fetch_restaurants_avg(),
+                            columns=['Restaurant','Reviews', 'Food Rating','Service Rating','Price Rating','Price Paid', 'Overall Rating'])
+        data['Price Paid'] = data['Price Paid'].apply(lambda x: f"{x:.2f} €")
+        return data

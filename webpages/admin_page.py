@@ -34,6 +34,7 @@ class Page:
                     st.error("User already exists")
                 except Exception as e:
                     st.write(e)
+                st.cache_data.clear()
 
 
         with recover_col.form("recover_pass"):
