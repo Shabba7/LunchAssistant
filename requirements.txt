@@ -1,7 +1,9 @@
 altair==5.0.1
+googlemaps==4.10.0
 pandas==2.0.3
 psycopg2-binary==2.9.7
 streamlit==1.25.0
 streamlit-authenticator==0.2.2
 streamlit-autorefresh==1.0.1
 streamlit-option-menu==0.3.6
+streamlit_searchbox==0.1.3
