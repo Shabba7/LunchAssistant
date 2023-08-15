@@ -2,9 +2,6 @@ import db.db_handler as db
 import pandas as pd
 import streamlit as st
 
-STRYPES_LAT  = 41.1578156070871
-STRYPES_LON = -8.635795928658316
-
 class Page:
     restaurants = 27
     money = 1500
@@ -59,7 +56,7 @@ class Page:
             return (float(lat), float(lon), 6, '#00ff00')
         rows = db.fetch_restaurants_locations()
         rows = list(map(prep_row, rows))
-        rows.append((STRYPES_LAT, STRYPES_LON, 20, '#ff0000'))
+        rows.append((st.secrets["strypes_geo"]["latitude"], st.secrets["strypes_geo"]["longitude"], 20, '#ff0000'))
 
         data = pd.DataFrame(rows, columns=['lat', 'lon', 'size', 'color'])
 
