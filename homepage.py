@@ -54,8 +54,8 @@ if auth_status:
     tabs = ["Home", "Ranking", "Picker", "Review", "Suggest"]
     icons = ["house", "arrow-down-up", "list-task", "pencil-square", "bookmark-plus-fill"]
     if user in [ "emoreira", "ngregori"]:
-        tabs =  ["Home", "Ranking", "Picker", "Review", "Suggest", "Admin"]
-        icons=["house", "arrow-down-up", "list-task", "pencil-square", "bookmark-plus-fill", "person-badge-fill"]
+        tabs.append("Admin")
+        icons.append("person-badge-fill")
 
     selected_menu = option_menu(
         None,
