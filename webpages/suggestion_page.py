@@ -87,7 +87,7 @@ class Page:
             location=strypes_geo_coords(), radius=5000, strict_bounds=True,     # Geo  restrictions
             components={"country":"PT"},                                        # Redundant?
             origin=strypes_geo_coords(),                                        # For straight line distance calculation
-            types="food",                                                       # Type restrictions
+            types="restaurant|cafe",                                            # Type restrictions
             session_token=token                                                 # Billing safety
         )
         st.session_state[f"predictions{st.session_state['user_id']}"] = predictions
