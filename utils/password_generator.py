@@ -4,7 +4,7 @@ import string
 import streamlit as st
 
 def generate_password(user):
-    characters = string.ascii_letters + string.digits + string.punctuation
+    characters = string.ascii_letters + string.digits
     random.seed(f'{st.secrets["auth"]["seed"]}{user}')
     password = ''.join(random.choice(characters) for _ in range(12))
 
