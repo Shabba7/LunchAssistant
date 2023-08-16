@@ -30,10 +30,10 @@ class Page:
 
         col4, col5, col6 = st.columns(3, gap="small")
 
-        col4.metric(label='Total money spent', value=db.fetch_total_money_spent())
+        col4.metric(label='Total money spent', value=f'{db.fetch_total_money_spent()}€')
 
         bs_name, bs_money = db.fetch_biggest_spender()
-        col5.metric(label="Ratinho do lixo 🐁", value=bs_name,delta=f'{bs_money}€',help="This will show last month's biggest spender.\nHe will have a free lunch paid by the rest")
+        col5.metric(label="Ratinho do lixo 🐁", value=bs_name,delta=f'{bs_money}€',help="This shows last month's biggest spender")
 
 
         col6.metric(label="Reviews done this month",
