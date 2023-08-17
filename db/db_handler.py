@@ -267,19 +267,37 @@ def _fetch_restaurants_visited_month(month):
 @st.cache_data(ttl=2)
 def fetch_restaurants_avg():
     # Average ratings of restaurants with at least one review
-    query = (
-        "SELECT re.res_name, count(rv.*) review_count, "
-        "    ROUND(AVG(rv.food_rating),2) avg_food, "
-        "    ROUND(AVG(rv.service_rating),2) avg_service, "
-        "    ROUND(AVG(rv.price_rating),2) avg_price, "
-        "    ROUND(AVG(rv.price_paid),2) avg_paid, "
-        "    ROUND(AVG(rv.food_rating) * 0.60 + AVG(rv.service_rating) * 0.15 + AVG(rv.price_rating) * 0.25, 2) overall_rating "
-        "FROM restaurants re "
-        "LEFT JOIN reviews rv ON re.res_id = rv.res_id "
-        "GROUP BY re.res_id "
-        "HAVING COUNT(rv.*) > 0; "
-    )
+    query = """
+        SELECT re.res_name, count(rv.*) review_count,
+            ROUND(AVG(rv.food_rating),2) avg_food,
+            ROUND(AVG(rv.service_rating),2) avg_service,
+            ROUND(AVG(rv.price_rating),2) avg_price,
+            ROUND(AVG(rv.price_paid),2) avg_paid,
+            ROUND(AVG(rv.food_rating) * 0.60 + AVG(rv.service_rating) * 0.15 + AVG(rv.price_rating) * 0.25, 2) overall_rating
+        FROM restaurants re
+        LEFT JOIN reviews rv ON re.res_id = rv.res_id
+        GROUP BY re.res_id
+        HAVING COUNT(rv.*) > 0;
+    """
     return _fetch_all_no_params(query)
+
+@st.cache_data(ttl=2)
+def fetch_single_restaurant_reviews(restaurant):
+    query = """
+        SELECT
+            u.user_name,
+            r.food_rating,
+            r.service_rating,
+            r.price_rating,
+            r.price_paid,
+            ROUND(r.food_rating * 0.60 + r.service_rating * 0.15 + r.price_rating * 0.25, 2) overall_rating
+        FROM reviews r
+        INNER JOIN users u ON r.user_id = u.user_id
+        INNER JOIN restaurants rt ON r.res_id = rt.res_id
+        WHERE rt.res_name = %s;
+    """
+    return _fetch_all(query,(restaurant,))
+
 
 @st.cache_data(ttl=10)
 def fetch_total_money_spent():

@@ -25,13 +25,11 @@ st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content
 st.markdown(
     """
 <style>
-[role=radiogroup]{
-gap: 3rem;
-display: flex;
-justify-content: space-evenly;
+.css-1y4p8pa {
+    width: 100%;
+    padding: 6rem 1rem 10rem;
+    max-width: 66rem;
 }
-
-
 </style>
 """,
     unsafe_allow_html=True,
