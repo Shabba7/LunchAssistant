@@ -211,13 +211,11 @@ def register_restaurant(res_name, res_loc, res_user):
     query = "INSERT INTO restaurants (res_name, res_loc, res_user) VALUES(%s, %s, %s);"
     return _insert(query, (res_name, res_loc, res_user))
 
-@st.cache_data(ttl=10)
 def fetch_money_spent_this_month():
     # Query to calculate money spent in the current month
     current_month = date.today().strftime('%Y-%m')
     return _fetch_money_spent_month(current_month)
 
-@st.cache_data(ttl=10)
 def fetch_money_spent_previous_month():
     # Query to calculate money spent in the previous month
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
@@ -238,13 +236,11 @@ def _fetch_money_spent_month(month):
 
     return float(money)
 
-@st.cache_data(ttl=10)
 def fetch_restaurants_visited_this_month():
     # Query to calculate money spent
     current_month = date.today().strftime('%Y-%m')
     return _fetch_restaurants_visited_month(current_month)
 
-@st.cache_data(ttl=10)
 def fetch_restaurants_visited_previous_month():
     # Query to calculate money spent
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
@@ -264,7 +260,6 @@ def _fetch_restaurants_visited_month(month):
 
     return restaurants
 
-@st.cache_data(ttl=2)
 def fetch_restaurants_avg():
     # Average ratings of restaurants with at least one review
     query = """
@@ -281,7 +276,6 @@ def fetch_restaurants_avg():
     """
     return _fetch_all_no_params(query)
 
-@st.cache_data(ttl=2)
 def fetch_single_restaurant_reviews(restaurant):
     query = """
         SELECT
@@ -290,7 +284,8 @@ def fetch_single_restaurant_reviews(restaurant):
             r.service_rating,
             r.price_rating,
             r.price_paid,
-            ROUND(r.food_rating * 0.60 + r.service_rating * 0.15 + r.price_rating * 0.25, 2) overall_rating
+            ROUND(r.food_rating * 0.60 + r.service_rating * 0.15 + r.price_rating * 0.25, 2) overall_rating,
+            r.comment
         FROM reviews r
         INNER JOIN users u ON r.user_id = u.user_id
         INNER JOIN restaurants rt ON r.res_id = rt.res_id
@@ -298,8 +293,16 @@ def fetch_single_restaurant_reviews(restaurant):
     """
     return _fetch_all(query,(restaurant,))
 
+def fetch_user_restaurant_review(restaurant,user):
+    query = """
+        SELECT r.food_rating, r.service_rating, r.price_rating, r.price_paid, r.comment
+        FROM reviews AS r
+        JOIN restaurants AS res ON r.res_id = res.res_id
+        WHERE r.user_id = %s AND res.res_name = %s;
+    """
+    return _fetch_all(query,(user,restaurant))
 
-@st.cache_data(ttl=10)
+
 def fetch_total_money_spent():
     # Query to calculate total money spent
     query = "SELECT SUM(price_paid) FROM reviews"
@@ -319,7 +322,6 @@ def fetch_restaurant_to_map():
     """
     return _fetch_all_no_params(query)
 
-@st.cache_data(ttl=10)
 def fetch_biggest_spender():
     # Query to find the user with the highest total spending and their user_name
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
@@ -338,13 +340,11 @@ def fetch_biggest_spender():
 
     return result[0] if result else ('---','---')
 
-@st.cache_data(ttl=10)
 def fetch_reviews_done_this_month():
     # Query to count reviews done this month
     current_month = date.today().strftime('%Y-%m')
     return _fetch_reviews_done_month(current_month)
 
-@st.cache_data(ttl=10)
 def fetch_reviews_done_previous_month():
     # Query to count reviews done previous month
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
@@ -362,7 +362,7 @@ def _fetch_reviews_done_month(month):
     return _fetch_one_no_params(query)
 
 # region Review
-def submit_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date):
+def submit_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date, comment):
     # Get the restaurant ID from its name and insert review into the review table
     query = (
         "WITH restaurant_id AS ( "
@@ -370,10 +370,26 @@ def submit_review(user_id, res_name, food_rating, service_rating, price_rating, 
         "    FROM restaurants "
         "    WHERE res_name = %s "
         ") "
-        "INSERT INTO reviews (user_id, res_id, food_rating, service_rating, price_rating, price_paid, review_date) "
-        "VALUES (%s, (SELECT res_id FROM restaurant_id), %s, %s, %s, %s, %s); "
+        "INSERT INTO reviews (user_id, res_id, food_rating, service_rating, price_rating, price_paid, review_date, comment) "
+        "VALUES (%s, (SELECT res_id FROM restaurant_id), %s, %s, %s, %s, %s, %s); "
     )
-    values = (res_name, user_id, food_rating, service_rating, price_rating, price_paid, date)
+    values = (res_name, user_id, food_rating, service_rating, price_rating, price_paid, date, comment)
+    _insert(query, values)
+
+def update_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date, comment):
+    # Get the restaurant ID from its name and insert review into the review table
+    query = """
+        WITH res_ids AS (
+            SELECT r.res_id
+            FROM reviews AS r
+            JOIN restaurants AS res ON r.res_id = res.res_id
+            WHERE r.user_id = %s AND res.res_name = %s
+        )
+        UPDATE reviews AS r
+        SET food_rating = %s, service_rating = %s, price_rating = %s, price_paid = %s, review_date = %s, comment = %s
+        WHERE r.res_id IN (SELECT res_id FROM res_ids);
+    """
+    values = (user_id, res_name, food_rating, service_rating, price_rating, price_paid, date, comment)
     _insert(query, values)
 # endregion
 
