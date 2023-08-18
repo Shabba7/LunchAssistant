@@ -13,7 +13,6 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded"
 )
-
 # count = st_autorefresh(interval=1000, key="strefreshcounter")
 
 st.markdown(
@@ -51,7 +50,7 @@ if auth_status:
 
     tabs = ["Home", "Ranking", "Picker", "Review", "Suggest"]
     icons = ["house", "arrow-down-up", "list-task", "pencil-square", "bookmark-plus-fill"]
-    if user in [ "emoreira", "ngregori"]:
+    if user in [ "emoreira", "ngregori", "msilva"]:
         tabs.append("Admin")
         icons.append("person-badge-fill")
 
@@ -62,13 +61,6 @@ if auth_status:
         orientation="horizontal",
     )
 
-    # if (
-    #     selected_menu == "Picker"
-    #     and picker_page.Page.get_time_until_next_midday().total_seconds() < 60
-    # ):
-    #     st_autorefresh(interval=100)
-    # else:
-    #     st_autorefresh(interval=100)
     map_tabs_to_obj[selected_menu].run()
 
 elif auth_status is None:
