@@ -6,6 +6,7 @@ from webpages import (
     picker_page, rankings_page, review_page,
     suggestion_page
 )
+from css import page_styling
 
 st.set_page_config(
     page_title="Lunch Assistant",
@@ -13,41 +14,8 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded"
 )
-# count = st_autorefresh(interval=1000, key="strefreshcounter")
 
-st.markdown(
-    "<h1 style='text-align: center; color: #0F596E;'>Lunch Assistant</h1>",
-    unsafe_allow_html=True,
-)
-
-st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center;font-size: 26px;} </style>', unsafe_allow_html=True)
-st.markdown(
-    """
-<style>
-.css-1y4p8pa {
-    width: 100%;
-    padding: 6rem 1rem 10rem;
-    max-width: 66rem;
-}
-[data-testid="metric-container"] {
-    width: fit-content;
-    margin: auto;
-}
-
-[data-testid="metric-container"] > div {
-    width: fit-content;
-    margin: auto;
-}
-
-[data-testid="metric-container"] label {
-    width: fit-content;
-    margin: auto;
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
+page_styling.setup_page()
 
 auth_status, user = login_page.Page().run()
 
@@ -78,7 +46,6 @@ if auth_status:
     map_tabs_to_obj[selected_menu].run()
 
 elif auth_status is None:
-    st.session_state["init_ran"] = True
     st.warning("Please enter your username and password")
 
 else:
