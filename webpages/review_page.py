@@ -67,6 +67,8 @@ class Page:
                                         review_comment
                                         )
                         st.success("Review submitted successfully!")
+                    # Clear data when new review is done
+                    st.cache_data.clear()
                 else:
                     st.error('That is too expensive!💰')
 
