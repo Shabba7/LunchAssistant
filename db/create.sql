@@ -31,6 +31,7 @@ CREATE TABLE reviews(
     price_rating    INT              NOT NULL CHECK (price_rating   >= 0),
     price_paid      NUMERIC(5,2)     NOT NULL CHECK (price_paid     >= 0),
     review_date     TIMESTAMP        NOT NULL,
+    comment         TEXT             NOT NULL DEFAULT '',
     PRIMARY KEY (user_id, res_id)
 );
 

@@ -16,7 +16,7 @@ class Page:
                 for selected_restaurant in multi_search:
                     result = db.fetch_single_restaurant_reviews(selected_restaurant)
                     st.markdown(f"##### {selected_restaurant}")
-                    st.dataframe(pd.DataFrame(result,columns=['User','Food Rating', 'Service Rating', 'Price Rating', 'Price Paid', 'Overall Rating']),
+                    st.dataframe(pd.DataFrame(result,columns=['User','Food Rating', 'Service Rating', 'Price Rating', 'Price Paid', 'Overall Rating', 'Comment']),
                                 use_container_width=True,
                                 hide_index=True
                                 )
