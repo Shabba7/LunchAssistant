@@ -43,29 +43,30 @@ class Page:
         review_comment = st.text_area(label="Tell us your experience!",value=comment)
         button_label = "Update Review" if review else "Submit Review"
         if st.button(label=button_label,use_container_width=True):
-            # Process the submitted review
-            if review:
-                db.update_review(st.session_state['user_id'],
-                                restaurant_name,
-                                food_rating,
-                                service_rating,
-                                price_rating,
-                                price_paid,
-                                datetime.datetime.now(pytz.timezone("Europe/London")),
-                                review_comment
-                                )
-                st.success("Review updated successfully!")
-            else:
-                db.submit_review(st.session_state['user_id'],
-                                restaurant_name,
-                                food_rating,
-                                service_rating,
-                                price_rating,
-                                price_paid,
-                                datetime.datetime.now(pytz.timezone("Europe/London")),
-                                review_comment
-                                )
-                st.success("Review submitted successfully!")
-
-
+                # Process the submitted review
+                if price_paid < 300:
+                    if review:
+                        db.update_review(st.session_state['user_id'],
+                                        restaurant_name,
+                                        food_rating,
+                                        service_rating,
+                                        price_rating,
+                                        price_paid,
+                                        datetime.datetime.now(pytz.timezone("Europe/London")),
+                                        review_comment
+                                        )
+                        st.success("Review updated successfully!")
+                    else:
+                        db.submit_review(st.session_state['user_id'],
+                                        restaurant_name,
+                                        food_rating,
+                                        service_rating,
+                                        price_rating,
+                                        price_paid,
+                                        datetime.datetime.now(pytz.timezone("Europe/London")),
+                                        review_comment
+                                        )
+                        st.success("Review submitted successfully!")
+                else:
+                    st.error('That is too expensive!💰')
 
