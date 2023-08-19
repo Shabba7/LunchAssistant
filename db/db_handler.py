@@ -83,12 +83,12 @@ def rebuild():
 
 
 # region User
-@st.cache_data(ttl=600)
+@st.cache_data()
 def fetch_user_id(username):
     query = "SELECT user_id FROM users WHERE user_handle = %s"
     return _fetch_one(query, (username,))
 
-@st.cache_data(ttl=10)
+@st.cache_data()
 def get_credentials():
     return _fetch_all_no_params("SELECT user_handle, user_name, user_email, pass_hash FROM users;")
 
@@ -156,18 +156,22 @@ def fetch_lastest_election_data():
     return results[0], results[1]
 # endregion
 
+@st.cache_data()
 def fetch_restaurants_names():
     names = _fetch_all_no_params("SELECT res_name from restaurants;")
     return [name[0] for name in names]
 
+@st.cache_data()
 def fetch_restaurants_locations():
     return _fetch_all_no_params("SELECT res_name, res_loc from restaurants;")
 
+@st.cache_data()
 def fetch_n_random_restaurants(nr):
     query = "SELECT res_id FROM restaurants ORDER BY RANDOM() LIMIT %s;"
     params = (nr,)
     return _fetch_all(query, params)
 
+@st.cache_data()
 def fetch_n_unknown_random_restaurants(nr):
     query = (
         "SELECT res_id, re.res_name, re.res_loc "
@@ -180,6 +184,7 @@ def fetch_n_unknown_random_restaurants(nr):
     params = (nr,)
     return _fetch_all(query, params)
 
+@st.cache_data()
 def fetch_n_random_restaurants_with_rating_gr(nr, rat):
     query = (
         "SELECT res_id, re.res_name, re.res_loc "
@@ -196,6 +201,7 @@ def fetch_n_random_restaurants_with_rating_gr(nr, rat):
     params = (rat, nr)
     return _fetch_all(query, params)
 
+@st.cache_data()
 def fetch_n_random_restaurants_within_radius(nr, radius):
     query = (
         "SELECT res_id, re.res_name, re.res_loc "
@@ -221,6 +227,7 @@ def fetch_money_spent_previous_month():
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_money_spent_month(previous_month)
 
+@st.cache_data()
 def _fetch_money_spent_month(month):
     # Query to calculate money spent
 
@@ -246,6 +253,7 @@ def fetch_restaurants_visited_previous_month():
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_restaurants_visited_month(previous_month)
 
+@st.cache_data()
 def _fetch_restaurants_visited_month(month):
     # Query to calculate money spent
     query = f"""
@@ -260,6 +268,7 @@ def _fetch_restaurants_visited_month(month):
 
     return restaurants
 
+@st.cache_data()
 def fetch_restaurants_avg():
     # Average ratings of restaurants with at least one review
     query = """
@@ -276,6 +285,7 @@ def fetch_restaurants_avg():
     """
     return _fetch_all_no_params(query)
 
+@st.cache_data()
 def fetch_single_restaurant_reviews(restaurant):
     query = """
         SELECT
@@ -293,6 +303,7 @@ def fetch_single_restaurant_reviews(restaurant):
     """
     return _fetch_all(query,(restaurant,))
 
+@st.cache_data()
 def fetch_user_restaurant_review(restaurant,user):
     query = """
         SELECT r.food_rating, r.service_rating, r.price_rating, r.price_paid, r.comment
@@ -302,7 +313,7 @@ def fetch_user_restaurant_review(restaurant,user):
     """
     return _fetch_all(query,(user,restaurant))
 
-
+@st.cache_data()
 def fetch_total_money_spent():
     # Query to calculate total money spent
     query = "SELECT SUM(price_paid) FROM reviews"
@@ -310,6 +321,7 @@ def fetch_total_money_spent():
     result = result if result else 0
     return float(result)
 
+@st.cache_data()
 def fetch_restaurant_to_map():
     query = """
         SELECT r.res_name, r.res_loc,
@@ -322,6 +334,7 @@ def fetch_restaurant_to_map():
     """
     return _fetch_all_no_params(query)
 
+@st.cache_data()
 def fetch_biggest_spender():
     # Query to find the user with the highest total spending and their user_name
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
@@ -340,6 +353,7 @@ def fetch_biggest_spender():
 
     return result[0] if result else ('---','---')
 
+
 def fetch_reviews_done_this_month():
     # Query to count reviews done this month
     current_month = date.today().strftime('%Y-%m')
@@ -350,6 +364,7 @@ def fetch_reviews_done_previous_month():
     previous_month = (date.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
     return _fetch_reviews_done_month(previous_month)
 
+@st.cache_data()
 def _fetch_reviews_done_month(month):
     # Query to count reviews done in month
     query = f"""

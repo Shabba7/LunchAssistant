@@ -1,13 +1,9 @@
-import streamlit as st
-import pandas as pd
-import os
-import db.db_handler as db
-from psycopg2.errors import UniqueViolation
 import datetime
+import db.db_handler as db
 import pytz
+import streamlit as st
 
 class Page:
-    review_saved = None
 
     def run(self):
         self.page()
@@ -67,6 +63,8 @@ class Page:
                                     review_comment
                                     )
                     st.success("Review submitted successfully!")
+                # Clear data when new review is done
+                st.cache_data.clear()
             else:
                 st.error('That is too expensive!💰')
 

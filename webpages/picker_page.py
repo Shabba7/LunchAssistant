@@ -7,6 +7,7 @@ import streamlit.components.v1 as stcomponents
 import css.progress_bar as pb
 import pytz
 
+@st.cache_data()
 def build_map(choice):
     name = choice.replace(" ", "+")
     map_url = f'https://www.google.com/maps/embed/v1/directions\

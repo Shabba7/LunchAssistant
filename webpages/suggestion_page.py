@@ -1,10 +1,9 @@
+from streamlit_searchbox import st_searchbox
+from typing import List
 import db.db_handler as db
 import googlemaps
 import streamlit as st
-from streamlit_searchbox import st_searchbox
-from typing import List
 import uuid
-
 
 @st.cache_resource()
 def init_gmaps():
@@ -40,6 +39,8 @@ class Page:
             if st.form_submit_button("Submit"):
                 db.store_suggestion(st.session_state['user_id'],suggestion)
                 st.success("Thank you for your suggestion!")
+                # Clear data when new suggestion is done
+                st.cache_data.clear()
 
     def great_suggestion(self):
         restaurant = st_searchbox(self.restaurant_lookup, key="place_api_search")
