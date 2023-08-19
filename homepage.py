@@ -29,6 +29,20 @@ st.markdown(
     padding: 6rem 1rem 10rem;
     max-width: 66rem;
 }
+[data-testid="metric-container"] {
+    width: fit-content;
+    margin: auto;
+}
+
+[data-testid="metric-container"] > div {
+    width: fit-content;
+    margin: auto;
+}
+
+[data-testid="metric-container"] label {
+    width: fit-content;
+    margin: auto;
+}
 </style>
 """,
     unsafe_allow_html=True,

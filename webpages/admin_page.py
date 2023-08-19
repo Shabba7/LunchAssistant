@@ -50,8 +50,8 @@ class Page:
 
 
 
-
-        _,_,col,_,_ = st.columns(5)
-        if col.button("NUKE"):
-            db.rebuild()
-            st.success("Now I Am Become Death, the Destroyer of Worlds")
+        if st.secrets["dev"]["dev_on"]:
+            _,_,col,_,_ = st.columns(5)
+            if col.button("NUKE"):
+                db.rebuild()
+                st.success("Now I Am Become Death, the Destroyer of Worlds")
