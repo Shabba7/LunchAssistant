@@ -1,13 +1,11 @@
+import colorsys
 import db.db_handler as db
 import pandas as pd
-import streamlit as st
 import pydeck as pdk
-import colorsys
+import streamlit as st
 
 class Page:
-    restaurants = 27
-    money = 1500
-    reviews = 142
+
     def __init__(self) -> None:
         if "init_ran" not in st.session_state:
             st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: center; } </style>', unsafe_allow_html=True)
@@ -48,6 +46,7 @@ class Page:
         return st.session_state['next_stop'] if 'next_stop' in st.session_state else "---"
 
     @staticmethod
+    @st.cache_data()
     def generate_map():
         STRYPES_LAT = st.secrets["strypes_geo"]["latitude"]
         STRYPES_LON = st.secrets["strypes_geo"]["longitude"]

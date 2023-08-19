@@ -1,10 +1,9 @@
+from streamlit_searchbox import st_searchbox
+from typing import List
 import db.db_handler as db
 import googlemaps
 import streamlit as st
-from streamlit_searchbox import st_searchbox
-from typing import List
 import uuid
-import extra_streamlit_components as stx
 
 @st.cache_resource()
 def init_gmaps():

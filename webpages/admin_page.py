@@ -1,7 +1,6 @@
 import db.db_handler as db
 import streamlit as st
 import utils.password_generator as pwgen
-import streamlit_authenticator as stauth
 from psycopg2.errors import UniqueViolation
 
 class Page:
@@ -51,7 +50,11 @@ class Page:
 
 
         if st.secrets["dev"]["dev_on"]:
-            _,_,col,_,_ = st.columns(5)
-            if col.button("NUKE"):
+            ncol,ccol = st.columns(2)
+            if ncol.button("NUKE"):
                 db.rebuild()
                 st.success("Now I Am Become Death, the Destroyer of Worlds")
+            if ccol.button("FLUSH"):
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                st.success("Thank you for flushing")
