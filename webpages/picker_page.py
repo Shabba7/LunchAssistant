@@ -37,8 +37,8 @@ class Page:
 
     def run(self):
 
-        if st.secrets["dev"]["dev_on"]:
-            self.debug_menu()
+        # if st.secrets["dev"]["dev_on"]:
+        #     self.debug_menu()
 
         if not self.is_vote_window_open():
             self.off_voting_hours()
