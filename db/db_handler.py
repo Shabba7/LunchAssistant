@@ -379,15 +379,10 @@ def submit_review(user_id, res_name, food_rating, service_rating, price_rating, 
 def update_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date, comment):
     # Get the restaurant ID from its name and insert review into the review table
     query = """
-        WITH res_ids AS (
-            SELECT r.res_id
-            FROM reviews AS r
-            JOIN restaurants AS res ON r.res_id = res.res_id
-            WHERE r.user_id = %s AND res.res_name = %s
-        )
         UPDATE reviews AS r
         SET food_rating = %s, service_rating = %s, price_rating = %s, price_paid = %s, review_date = %s, comment = %s
-        WHERE r.res_id IN (SELECT res_id FROM res_ids);
+        FROM restaurants AS res
+        WHERE r.res_id = res.res_id AND r.user_id = %s AND res.res_name = %s;
     """
     values = (user_id, res_name, food_rating, service_rating, price_rating, price_paid, date, comment)
     _insert(query, values)
