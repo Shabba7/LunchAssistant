@@ -376,7 +376,7 @@ def submit_review(user_id, res_name, food_rating, service_rating, price_rating, 
     values = (res_name, user_id, food_rating, service_rating, price_rating, price_paid, date, comment)
     _insert(query, values)
 
-def update_review(user_id, res_name, food_rating, service_rating, price_rating, price_paid, date, comment):
+def update_review(food_rating, service_rating, price_rating, price_paid, date, comment,user_id, res_name):
     # Get the restaurant ID from its name and insert review into the review table
     query = """
         UPDATE reviews AS r
