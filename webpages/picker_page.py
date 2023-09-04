@@ -58,6 +58,11 @@ class Page:
         return Page.VOTE_OPEN_HOUR <= datetime.now(pytz.timezone("Europe/London")).time().hour < Page.VOTE_CLOSE_HOUR
 
     def off_voting_hours(self):
+
+        #HACK
+        if db.is_restaurant_election_open() != None:
+            db.end_restaurant_election()
+
         st.markdown(
             f"<p style='text-align: center; background-color:#fffce6; color: #926C05;'>Poll is closed at the moment 🥸<br>Come back tomorrow between {Page.VOTE_OPEN_HOUR}am and {Page.VOTE_CLOSE_HOUR}am!</p>",
             unsafe_allow_html=True,
