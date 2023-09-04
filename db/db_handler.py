@@ -117,7 +117,7 @@ def fetch_restaurant_election_options(election_id):
     return _fetch_all(query, params)
 
 def end_restaurant_election():
-    _execute("UPDATE elections SET end_time = current_timestamp WHERE end_time IS NULL")
+    _execute("UPDATE elections SET end_time = NOW() WHERE end_time IS NULL")
 
 def add_restaurant_vote(voter_id, restaurant_id):
     try:
